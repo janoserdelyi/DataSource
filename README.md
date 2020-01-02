@@ -24,6 +24,7 @@ Named connections can be created two ways :
 			<database>datbase-name-here</database>
 			<username>foo</username>
 			<password>abc123</password>
+			<!-- or<passfile>/path/to/.pgpass</passfile> -->
 			<port>5432</port>
 		</connection>
 		
