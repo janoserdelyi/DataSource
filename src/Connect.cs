@@ -35,11 +35,11 @@ namespace com.janoserdelyi.DataSource
 			return this;
 		}
 
-		public void Go () {
+		public int Go () {
 			this.connection.OpenAsync ();
 			using (this.connection) {
 				using (this.command) {
-					this.command.ExecuteNonQueryAsync ();
+					return this.command.ExecuteNonQueryAsync ().Result;
 				}
 			}
 		}

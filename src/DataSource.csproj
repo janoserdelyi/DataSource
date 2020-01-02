@@ -5,7 +5,7 @@
 		<Authors>Janos Erdelyi</Authors>
 		<Product>DataSource</Product>
 		<Description>Ancient but helpful shim layer for managing database access. Primarily PostgreSQL, but also works for MSSQL and MySQL</Description>
-		<Version>1.0.0</Version>
+		<Version>1.1.0</Version>
 		<AssemblyName>DataSource</AssemblyName>
 	</PropertyGroup>
 	<ItemGroup>
