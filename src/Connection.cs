@@ -54,7 +54,8 @@ namespace com.janoserdelyi.DataSource
 					command.CommandType = CommandType.StoredProcedure;
 					return command;
 				case DatabaseType.MySql:
-					command = new MySql.Data.MySqlClient.MySqlCommand (commandText, (MySql.Data.MySqlClient.MySqlConnection)this.baseConnection);
+					command = new MySqlConnector.MySqlCommand (commandText, (MySqlConnector.MySqlConnection)this.baseConnection);
+					//command = new MySql.Data.MySqlClient.MySqlCommand (commandText, (MySql.Data.MySqlClient.MySqlConnection)this.baseConnection);
 					command.CommandType = CommandType.StoredProcedure;
 					return command;
 			}

@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Data.Common;
 
-// using com.reactivesoftware.ExtTypes;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
+//using MySql.Data.MySqlClient;
 
 namespace com.janoserdelyi.DataSource
 {
@@ -154,6 +154,10 @@ namespace com.janoserdelyi.DataSource
 			throw new InvalidOperationException ("GetJson is not yet implemented for MySQL");
 		}
 		public string GetJsonb (string column) {
+			throw new InvalidOperationException ("GetJsonb is not yet implemented for MySQL");
+		}
+
+		public string GetRegconfig (string column) {
 			throw new InvalidOperationException ("GetJsonb is not yet implemented for MySQL");
 		}
 		#endregion

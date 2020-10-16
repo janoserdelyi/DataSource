@@ -38,7 +38,8 @@ namespace com.janoserdelyi.DataSource
 					connection = new Npgsql.NpgsqlConnection (connections[name].ToString ());
 					break;
 				case DatabaseType.MySql:
-					connection = new MySql.Data.MySqlClient.MySqlConnection (connections[name].ToString ());
+					connection = new MySqlConnector.MySqlConnection (connections[name].ToString ());
+					//connection = new MySql.Data.MySqlClient.MySqlConnection (connections[name].ToString ());
 					break;
 				case DatabaseType.Sqlite:
 					throw new NotSupportedException ("Sqlite is not yet supported");

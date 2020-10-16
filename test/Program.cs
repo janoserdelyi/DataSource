@@ -7,8 +7,51 @@ namespace test
 {
 	class Program
 	{
+
+		private static string getString (
+			Command cmd
+		) {
+			using (IDataReader dr = cmd.ExecuteReader ()) {
+				string ret = null;
+				if (dr.Read ()) {
+					return cmd.DRH.GetString ("a_string");
+				}
+				return ret;
+			}
+		}
+
+		private static string getRegconfig (
+			Command cmd
+		) {
+			using (IDataReader dr = cmd.ExecuteReader ()) {
+				string ret = null;
+				if (dr.Read ()) {
+					return cmd.DRH.GetRegconfig ("reg");
+				}
+				return ret;
+			}
+		}
+
 		static void Main (string[] args) {
 			Console.WriteLine ("Hello World!");
+
+			/**/
+			ConnectionPropertyBag devConnection = new ConnectionPropertyBag () {
+				DatabaseType = DatabaseType.Postgresql,
+				Name = "dev",
+				Server = "pgdev03.cd8qbxfbbqla.us-east-1.rds.amazonaws.com",
+				Database = "nestiny",
+				Username = "nestinyadmin",
+				Password = "donkey8kicker",
+				Port = "5432"
+			};
+			ConnectionManager.Instance.AddConnection (devConnection);
+
+			string lang = new Connect ("dev").Query ("select language as reg from content limit 1;").Go<string> (getRegconfig);
+
+			Console.WriteLine ($"langauge : {lang}");
+
+
 
 			bool newTest = false;
 

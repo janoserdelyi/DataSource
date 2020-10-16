@@ -93,5 +93,7 @@ namespace com.janoserdelyi.DataSource
 		// 2018-07-26 finally a possibly need for this
 		string GetJson (string column);
 		string GetJsonb (string column);
+
+		string GetRegconfig (string column);
 	}
 }

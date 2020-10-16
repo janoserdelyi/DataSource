@@ -148,6 +148,10 @@ namespace com.janoserdelyi.DataSource
 		public string GetJsonb (string column) {
 			throw new InvalidOperationException ("GetJsonb is not yet implemented for MSSQL");
 		}
+
+		public string GetRegconfig (string column) {
+			throw new InvalidOperationException ("GetJsonb is not yet implemented for MySQL");
+		}
 		#endregion
 
 		#region Nullable<t> Types

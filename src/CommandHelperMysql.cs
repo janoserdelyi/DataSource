@@ -3,10 +3,11 @@ using System.Text;
 using System.Data;
 using System.Data.Common;
 
-using MySql;
-using MySql.Data;
-using MySql.Data.MySqlClient;
-using MySql.Data.Types;
+using MySqlConnector;
+//using MySql;
+//using MySql.Data;
+//using MySql.Data.MySqlClient;
+//using MySql.Data.Types;
 
 // using com.reactivesoftware.ExtTypes;
 

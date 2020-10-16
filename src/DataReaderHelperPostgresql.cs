@@ -178,6 +178,16 @@ namespace com.janoserdelyi.DataSource
 			}
 			return dr.GetString (ord);
 		}
+
+		// 2020-08-24
+		public string GetRegconfig (string column) {
+			int ord = dr.GetOrdinal (column);
+			if (dr.IsDBNull (ord)) {
+				return null;
+			}
+			return dr.GetValue (ord).ToString ();
+		}
+
 		#endregion
 
 		#region Nullable<t> Types
