@@ -111,7 +111,21 @@ private static IList<string> getStrings (
 		}
 		return rets;
 	}
-}
-		
+}		
 ```
+
+If `getStrings` is not something you would use in multiple functions, you can easily inline the Func.
+
+```csharp
+IList<string> results = new Connect ("MyConnection").Query ("select bar from foo;").Go<IList<string>> ((cmd) => {
+	using (IDataReader dr = cmd.ExecuteReader ()) {
+		IList<string> rets = new List<string> ();
+		while (dr.Read ()) {
+			rets.Add (cmd.DRH.GetString ("bar"));
+		}
+		return rets;
+	}
+});		
+```
+
 
