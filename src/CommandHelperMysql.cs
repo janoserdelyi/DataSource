@@ -191,6 +191,12 @@ namespace com.janoserdelyi.DataSource
 			command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
 			command.Parameters[param].Value = value;
 		}
+		public void Append (
+			string param,
+			DateTimeOffset value
+		) {
+			throw new InvalidOperationException ("Not yet implemented.");
+		}
 
 		public void Append (
 			string param,

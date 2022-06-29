@@ -26,6 +26,12 @@ namespace com.janoserdelyi.DataSource
 			this.connection = ConnectionManager.Instance.GetConnection (connectionName, false);
 		}
 
+		public Connect (
+			Connection connection
+		) {
+			this.connection = connection;
+		}
+
 		public Connect Query (
 			string query
 		) {

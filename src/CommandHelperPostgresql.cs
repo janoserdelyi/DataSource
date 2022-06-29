@@ -211,7 +211,25 @@ namespace com.janoserdelyi.DataSource
 			string param,
 			DateTime value
 		) {
-			command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTime, 4));
+
+			//command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTime, 4));
+			// npgsql 6.x made breaking changes to timezone with[out] time zone
+			if (value.Kind != DateTimeKind.Utc) {
+				value = value.ToUniversalTime ();
+			}
+			command.Parameters.Add (new Npgsql.NpgsqlParameter {
+				ParameterName = param,
+				Value = value,
+				NpgsqlDbType = NpgsqlDbType.TimestampTz
+			});
+			command.Parameters[param].Value = value;
+		}
+
+		public void Append (
+			string param,
+			DateTimeOffset value
+		) {
+			command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTimeOffset));
 			command.Parameters[param].Value = value;
 		}
 
@@ -497,8 +515,18 @@ namespace com.janoserdelyi.DataSource
 			string param,
 			DateTime? value
 		) {
-			command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTime, 4));
+
+			command.Parameters.Add (new Npgsql.NpgsqlParameter {
+				ParameterName = param,
+				NpgsqlDbType = NpgsqlDbType.TimestampTz
+			});
+			//command.Parameters[param].Value = value;
+
+			//command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTime, 4));
 			if (value.HasValue) {
+				if (value.Value.Kind != DateTimeKind.Utc) {
+					value = value.Value.ToUniversalTime ();
+				}
 				command.Parameters[param].Value = value.Value;
 			} else {
 				command.Parameters[param].Value = DBNull.Value;

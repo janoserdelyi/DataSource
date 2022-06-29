@@ -56,6 +56,13 @@ namespace com.janoserdelyi.DataSource
 		}
 		*/
 
+		// 2022-06-28
+		// i'm not convinced i like this. like at all
+		// fi this is the trash i'm thinking about, i'll just leave it in the client app
+		//public System.Numerics.BigInteger GetBigInteger (string column) {
+		//	return System.Numerics.BigInteger.Parse (dr.GetString (dr.GetOrdinal (column)));
+		//}
+
 		public long GetLong (string column) {
 			return dr.GetInt64 (dr.GetOrdinal (column));
 		}
@@ -85,7 +92,16 @@ namespace com.janoserdelyi.DataSource
 		}
 
 		public DateTime GetDateTime (string column) {
-			return dr.GetDateTime (dr.GetOrdinal (column));
+			// breaking change with npgsql 6.x - returning datetimekind UTC where i was expecting local previously
+			// i need to simply restore that for now but i need to address this better later
+			// return dr.GetDateTime (dr.GetOrdinal (column));
+			DateTime ret = dr.GetDateTime (dr.GetOrdinal (column));
+
+			if (ret.Kind == DateTimeKind.Utc) {
+				ret = ret.ToLocalTime ();
+			}
+
+			return ret;
 		}
 
 		public TimeSpan GetTimeSpan (string column) {
@@ -127,6 +143,7 @@ namespace com.janoserdelyi.DataSource
 		}
 
 		public DateTime[] GetDateTimeArray (string column) {
+			// warning, these need to return Localtime but they will not since npgsql 6.x
 			return (DateTime[])dr.GetValue (dr.GetOrdinal (column));
 		}
 
@@ -252,7 +269,15 @@ namespace com.janoserdelyi.DataSource
 			if (dr.IsDBNull (ord)) {
 				return null;
 			}
-			return dr.GetDateTime (ord);
+			//return dr.GetDateTime (ord);
+
+			DateTime ret = dr.GetDateTime (ord);
+
+			if (ret.Kind == DateTimeKind.Utc) {
+				ret = ret.ToLocalTime ();
+			}
+
+			return ret;
 		}
 
 		public TimeSpan? GetTimeSpanNullable (string column) {

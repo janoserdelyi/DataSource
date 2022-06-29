@@ -193,6 +193,12 @@ namespace com.janoserdelyi.DataSource
 			command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
 			command.Parameters[param].Value = value;
 		}
+		public void Append (
+			string param,
+			DateTimeOffset value
+		) {
+			throw new InvalidOperationException ("Not yet implemented.");
+		}
 
 		/// <summary></summary>
 		/// <remarks>none</remarks>
