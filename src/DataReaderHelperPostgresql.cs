@@ -58,7 +58,7 @@ namespace com.janoserdelyi.DataSource
 
 		// 2022-06-28
 		// i'm not convinced i like this. like at all
-		// fi this is the trash i'm thinking about, i'll just leave it in the client app
+		// if this is the trash i'm thinking about, i'll just leave it in the client app
 		//public System.Numerics.BigInteger GetBigInteger (string column) {
 		//	return System.Numerics.BigInteger.Parse (dr.GetString (dr.GetOrdinal (column)));
 		//}
@@ -142,9 +142,22 @@ namespace com.janoserdelyi.DataSource
 			return (double[])dr.GetValue (dr.GetOrdinal (column));
 		}
 
+		[Obsolete ("this has not been converted to deal with npgsql 6.x datetime handling changes. use at own risk")]
 		public DateTime[] GetDateTimeArray (string column) {
 			// warning, these need to return Localtime but they will not since npgsql 6.x
-			return (DateTime[])dr.GetValue (dr.GetOrdinal (column));
+			var rets = (DateTime[])dr.GetValue (dr.GetOrdinal (column));
+
+			if (rets != null && rets.Length > 0) {
+				var newrets = new DateTime[rets.Length];
+
+				for (int i = 0; i < rets.Length; i++) {
+					newrets[i] = rets[i].ToLocalTime ();
+				}
+
+				return newrets;
+			}
+
+			return rets;
 		}
 
 		public string[] GetStringArray (string column) {

@@ -47,7 +47,26 @@ namespace test
 			};
 			ConnectionManager.Instance.AddConnection (devConnection);
 
-			string lang = new Connect ("dev").Query ("select language as reg from content limit 1;").Go<string> (getRegconfig);
+			// npgsql 6.x made a significant breaking change to date handling. so i'm testing
+			DateTime testDate = DateTime.Now;
+
+			new Connect ("dev").Query ("insert into testtime (dttimetz) values (:test);").Append ("test", testDate).Go ();
+
+			DateTime? returnedDt = new Connect ("dev").Query ("select dttimetz from testtime order by dttimetz desc limit 1;").Go<DateTime?> ((cmd) => {
+				using (IDataReader dr = cmd.ExecuteReader ()) {
+					if (dr.Read ()) {
+						return cmd.DRH.GetDateTime ("dttimetz");
+					}
+					DateTime? foo = null;
+					return foo;
+				}
+			});
+
+			Console.WriteLine (returnedDt == null ? "no date returned" : returnedDt.Value.ToString ("yyyy-MM-dd hh:mm:ss"));
+			Console.WriteLine ("same date went in and came out ? " + (testDate == returnedDt.Value).ToString ());
+
+			//string lang = new Connect ("dev").Query ("select language as reg from content limit 1;").Go<string> (getRegconfig);
+			string lang = new Connect (ConnectionManager.Instance.GetConnection ("dev")).Query ("select language as reg from content limit 1;").Go<string> (getRegconfig);
 
 			Console.WriteLine ($"langauge : {lang}");
 
