@@ -2,8 +2,6 @@
 using System.Data;
 using System.Data.Common;
 
-using Npgsql;
-
 namespace com.janoserdelyi.DataSource
 {
 
@@ -46,9 +44,10 @@ namespace com.janoserdelyi.DataSource
 			DbCommand command = null;
 			switch (this.databaseType) {
 				case DatabaseType.MSSQL:
-					command = new System.Data.SqlClient.SqlCommand (commandText, (System.Data.SqlClient.SqlConnection)this.baseConnection);
-					command.CommandType = CommandType.StoredProcedure;
-					return command;
+					throw new NotSupportedException ("MSSQL removed");
+				//command = new System.Data.SqlClient.SqlCommand (commandText, (System.Data.SqlClient.SqlConnection)this.baseConnection);
+				//command.CommandType = CommandType.StoredProcedure;
+				//return command;
 				case DatabaseType.Postgresql:
 					command = new Npgsql.NpgsqlCommand (commandText, (Npgsql.NpgsqlConnection)this.baseConnection);
 					command.CommandType = CommandType.StoredProcedure;
@@ -66,7 +65,8 @@ namespace com.janoserdelyi.DataSource
 		public ICommandHelper GetCommandHelper () {
 			switch (this.databaseType) {
 				case DatabaseType.MSSQL:
-					return new CommandHelperMssql ();
+					throw new NotSupportedException ("MSSQL removed");
+				//return new CommandHelperMssql ();
 				case DatabaseType.Postgresql:
 					return new CommandHelperPostgresql ();
 				case DatabaseType.MySql:

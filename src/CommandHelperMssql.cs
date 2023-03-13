@@ -1,10 +1,9 @@
-﻿using System;
+﻿/*
+using System;
 using System.Text;
 using System.Data;
 using System.Data.Common;
 using System.Data.SqlClient;
-
-// using com.reactivesoftware.ExtTypes;
 
 namespace com.janoserdelyi.DataSource
 {
@@ -17,12 +16,7 @@ namespace com.janoserdelyi.DataSource
 		public CommandHelperMssql () {
 
 		}
-
-		/*
-		public IDbCommand Command {
-			set { command = (SqlCommand)value; }
-		}
-		*/
+		
 		public DbCommand Command {
 			set { command = (SqlCommand)value; }
 		}
@@ -442,132 +436,6 @@ namespace com.janoserdelyi.DataSource
 
 		#endregion
 
-		#region ExtTypes
-		/*
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			IntObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.Int, 4));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			LongObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.BigInt, 8));
-			if (value == null) { command.Parameters[param].Value = DBNull.Value; }
-			else { command.Parameters[param].Value = value.Value; }
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			ShortObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.SmallInt, 2));
-			if (value == null) { command.Parameters[param].Value = DBNull.Value; } 
-			else { command.Parameters[param].Value = value.Value; }
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			CharObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.Char, 1));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			ByteObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.TinyInt));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			BoolObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.Bit));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			DateTimeObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.DateTime, 4));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			DecimalObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.Decimal));
-			if (value == null) {
-				command.Parameters[param].Value = DBNull.Value;
-			} else {
-				command.Parameters[param].Value = value.Value;
-			}
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			DecimalObj value, 
-			bool isMoney
-		) {
-			if (isMoney) {
-				command.Parameters.Add(new SqlParameter(param, SqlDbType.Money));
-			} else {
-				command.Parameters.Add(new SqlParameter(param, SqlDbType.Decimal));
-			}
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-
-		[Obsolete("Convert to native nullable types")]
-		public void Append (
-			string param, 
-			GuidObj value
-		) {
-			command.Parameters.Add(new SqlParameter(param, SqlDbType.UniqueIdentifier));
-			if (value == null)
-				command.Parameters[param].Value = DBNull.Value;
-			else
-				command.Parameters[param].Value = value.Value;
-		}
-		*/
-		#endregion
-
 		private string Join (char[] ary) {
 			StringBuilder sb = new StringBuilder (8);
 			for (int i = 0; i < ary.Length; i++) {
@@ -579,3 +447,4 @@ namespace com.janoserdelyi.DataSource
 		private SqlCommand command;
 	}
 }
+*/

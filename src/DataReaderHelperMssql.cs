@@ -1,4 +1,5 @@
-﻿using System;
+﻿/*
+using System;
 using System.Data.Common;
 using System.Data.SqlClient;
 
@@ -229,100 +230,7 @@ namespace com.janoserdelyi.DataSource
 
 		#endregion
 
-		#region ExtTypes
-		/*
-		[Obsolete("Use native nullable types")]
-		public IntObj GetIntObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) return null;
-			else return new IntObj(dr.GetInt32(ord));
-		}
-
-		[Obsolete("Use native nullable types")]
-		public LongObj GetLongObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) { return null; }
-			else { return new LongObj(dr.GetInt64(ord)); }
-		}
-
-		[Obsolete("Use native nullable types")]
-		public LongObj GetInt64Obj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) { return null; }
-			else { return new LongObj(dr.GetInt64(ord)); }
-		}
-
-		[Obsolete("Use native nullable types")]
-		public ShortObj GetShortObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) return null;
-			else return new ShortObj(dr.GetInt16(ord));
-		}
-
-		[Obsolete("Use native nullable types")]
-		public ByteObj GetByteObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) return null;
-			else return new ByteObj(dr.GetByte(ord));
-		}
-
-		[Obsolete("Use native nullable types")]
-		public BoolObj GetBoolObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) { return null; }
-			else { return new BoolObj(dr.GetBoolean(ord)); }
-		}
-
-		[Obsolete("Use native nullable types")]
-		public CharObj GetCharObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) return null;
-			else return new CharObj(dr.GetString(ord)[0]);
-		}
-
-		[Obsolete("Use native nullable types")]
-		public DateTimeObj GetDateTimeObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) {
-				return null;
-			}
-			return new DateTimeObj(dr.GetDateTime(ord));
-		}
-
-		[Obsolete("Use native nullable types")]
-		public DecimalObj GetDecimalObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord))
-				return null;
-
-			if (dr.GetDataTypeName(ord).ToLower() == "money") {
-				return new DecimalObj(dr.GetSqlMoney(ord).ToDecimal());
-			}
-			return new DecimalObj(dr.GetDecimal(ord));
-		}
-
-		[Obsolete("Use native nullable types")]
-		public DecimalObj GetMoneyObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) {
-				return null;
-			}
-			return new DecimalObj(dr.GetSqlMoney(ord).ToDecimal());
-		}
-
-		[Obsolete("Use native nullable types")]
-		public GuidObj GetGuidObj (string column) {
-			int ord = dr.GetOrdinal(column);
-			if (dr.IsDBNull(ord)) {
-				return null;
-			}
-			return new GuidObj(dr.GetGuid(ord));
-		}
-		*/
-		#endregion
-
 		private SqlDataReader dr;
-
-
 	}
 }
+*/

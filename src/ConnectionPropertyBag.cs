@@ -41,6 +41,8 @@ namespace com.janoserdelyi.DataSource
 		public string CommandTimeout { get; set; }
 		public string ApplicationName { get; set; }
 		public string Keepalive { get; set; }
+		// 2023-03-13
+		public bool IncludeErrorDetail { get; set; }
 
 		private static IDictionary<string, ConnectionPropertyBag> parsedStrings { get; set; } = new Dictionary<string, ConnectionPropertyBag> ();
 
@@ -208,6 +210,13 @@ namespace com.janoserdelyi.DataSource
 							break;
 						case "application name":
 							bag.ApplicationName = value;
+							break;
+						case "includeerrordetail":
+							if (bool.TryParse (value, out bool ied)) {
+								bag.IncludeErrorDetail = ied;
+							} else {
+								bag.IncludeErrorDetail = false; // default
+							}
 							break;
 					}
 				}
@@ -402,6 +411,10 @@ namespace com.janoserdelyi.DataSource
 
 			if (!string.IsNullOrEmpty (ApplicationName)) {
 				sb.Append ("Application Name=").Append (ApplicationName).Append (";");
+			}
+
+			if (IncludeErrorDetail == true) {
+				sb.Append ("Include Error Detail=True;");
 			}
 
 			string temp = sb.ToString ();

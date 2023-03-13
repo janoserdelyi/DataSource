@@ -1,10 +1,10 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Data;
 using System.Data.Common;
-using io = System.IO;
 using System.Xml;
+using io = System.IO;
 
 namespace com.janoserdelyi.DataSource
 {
@@ -32,8 +32,9 @@ namespace com.janoserdelyi.DataSource
 
 			switch (connections[name].DatabaseType) {
 				case DatabaseType.MSSQL:
-					connection = new System.Data.SqlClient.SqlConnection (connections[name].ToString ());
-					break;
+					throw new NotSupportedException ("MSSQL removed");
+				//connection = new System.Data.SqlClient.SqlConnection (connections[name].ToString ());
+				//break;
 				case DatabaseType.Postgresql:
 					connection = new Npgsql.NpgsqlConnection (connections[name].ToString ());
 					break;
@@ -115,7 +116,7 @@ namespace com.janoserdelyi.DataSource
 			try {
 				config.Load (io.Path.Combine (AppDomain.CurrentDomain.BaseDirectory, "DataSource.config"));
 			} catch (System.IO.FileNotFoundException) { // oops) {
-														//throw new MissingConfigurationException("Unable to locate DataSource.config at '" + AppDomain.CurrentDomain.BaseDirectory + "'", oops);
+																									//throw new MissingConfigurationException("Unable to locate DataSource.config at '" + AppDomain.CurrentDomain.BaseDirectory + "'", oops);
 
 				// 2015-04-03 a bit of a shift from previous history.
 				// i don't want it to be required to have a config file since connects can be programatically added
