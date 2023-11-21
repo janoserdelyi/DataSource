@@ -104,6 +104,10 @@ namespace com.janoserdelyi.DataSource
 			return ret;
 		}
 
+		public DateTimeOffset GetDateTimeOffset (string column) {
+			return dr.GetDateTime (dr.GetOrdinal (column));
+		}
+
 		public TimeSpan GetTimeSpan (string column) {
 			int ord = dr.GetOrdinal (column);
 			if (dr.IsDBNull (ord)) {

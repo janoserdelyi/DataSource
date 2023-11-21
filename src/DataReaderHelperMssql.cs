@@ -1,7 +1,6 @@
-﻿/*
-using System;
+﻿using System;
 using System.Data.Common;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource
 {
@@ -85,6 +84,11 @@ namespace com.janoserdelyi.DataSource
 			return dr.GetDateTime (ord);
 		}
 
+		public DateTimeOffset GetDateTimeOffset (string column) {
+			int ord = dr.GetOrdinal (column);
+			return dr.GetDateTimeOffset (ord);
+		}
+
 		public TimeSpan GetTimeSpan (string column) {
 			throw new InvalidOperationException ("GetTimeSpan is not programmed yet for MSSQL");
 		}
@@ -151,7 +155,7 @@ namespace com.janoserdelyi.DataSource
 		}
 
 		public string GetRegconfig (string column) {
-			throw new InvalidOperationException ("GetJsonb is not yet implemented for MySQL");
+			throw new InvalidOperationException ("GetRegconfig is not yet implemented for MSSQL");
 		}
 		#endregion
 
@@ -233,4 +237,3 @@ namespace com.janoserdelyi.DataSource
 		private SqlDataReader dr;
 	}
 }
-*/

@@ -1,9 +1,8 @@
-﻿/*
-using System;
-using System.Text;
+﻿using System;
 using System.Data;
 using System.Data.Common;
-using System.Data.SqlClient;
+using System.Text;
+using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource
 {
@@ -16,7 +15,7 @@ namespace com.janoserdelyi.DataSource
 		public CommandHelperMssql () {
 
 		}
-		
+
 		public DbCommand Command {
 			set { command = (SqlCommand)value; }
 		}
@@ -447,4 +446,3 @@ namespace com.janoserdelyi.DataSource
 		private SqlCommand command;
 	}
 }
-*/

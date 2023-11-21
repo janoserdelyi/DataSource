@@ -319,6 +319,11 @@ namespace com.janoserdelyi.DataSource
 			//"App=HCL;"
 			//"Connection Reset=false;"
 
+			// temp. i need flags for this
+			sb.Append ("Encrypt=false;");
+			// another option is 
+			// TrustServerCertificate=True
+
 			//other features will be added as i actuall use them. i don't think i'm going
 			//to try to cover a bunch of cases that i don't actually encounter in production
 

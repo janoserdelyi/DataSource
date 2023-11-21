@@ -35,7 +35,39 @@ namespace test
 		static void Main (string[] args) {
 			Console.WriteLine ("Hello World!");
 
-			/**/
+			// 2023-11-20. kill me. time to get back into MSSQL!
+			ConnectionPropertyBag mssqlConnection = new ConnectionPropertyBag () {
+				DatabaseType = DatabaseType.MSSQL,
+				Name = "mssql",
+				Server = "192.168.1.30",
+				Database = "testdb",
+				Username = "sa",
+				Password = "SuperStrongPassword1!",
+				Port = "1433"
+			};
+			ConnectionManager.Instance.AddConnection (mssqlConnection);
+
+			int recordCount = new Connect ("mssql").Query ("select count(*) as cnt from foo.inventory;").Go<int> ((cmd) => {
+				using (IDataReader dr = cmd.ExecuteReader ()) {
+					if (dr.Read ()) {
+						return cmd.DRH.GetInt ("cnt");
+					}
+					return 0;
+				}
+			});
+
+			(DateTime dt, DateTimeOffset dto) foo = new Connect ("mssql").Query ("select create_dt, convert(datetime, create_dt) as dt from foo.inventory;").Go<(DateTime dt, DateTimeOffset dto)> ((cmd) => {
+				using (IDataReader dr = cmd.ExecuteReader ()) {
+					if (dr.Read ()) {
+						return (cmd.DRH.GetDateTime ("dt"), cmd.DRH.GetDateTimeOffset ("create_dt"));
+					}
+					throw new Exception ("fail");
+				}
+			});
+
+			Console.WriteLine ();
+
+			/*
 			ConnectionPropertyBag devConnection = new ConnectionPropertyBag () {
 				DatabaseType = DatabaseType.Postgresql,
 				Name = "dev",
@@ -180,31 +212,12 @@ values (:a_string, :a_nullable_int, :an_int, :a_nullable_jsonb, :an_inet);";
 				.Append ("an_inet", System.Net.IPAddress.Parse ("192.168.0.1"))
 				.Go ();
 
-			/*
-			using (Connection conn = ConnectionManager.Instance.GetConnection ("Test")) {
-
-				using (Command cmd = conn.GetCommand ("select * from dts limit 1;")) {
-					cmd.CommandType = CommandType.Text;
-					//cmd.CH.Append ("foo", foo);
-					using (IDataReader dr = cmd.ExecuteReader ()) {
-						if (dr.Read ()) {
-							Console.WriteLine ("id : " + cmd.DRH.GetInt ("id").ToString ());
-							Console.WriteLine ("create_dt : " + cmd.DRH.GetDateTime ("create_dt").ToString ());
-							Console.WriteLine ("a_string : " + cmd.DRH.GetString ("a_string"));
-							//Console.WriteLine ("a_nullable_int : " + cmd.DRH.GetIntNullable ("a_nullable_int").Value.ToString ());
-							Console.WriteLine ("an_int : " + cmd.DRH.GetInt ("an_int").ToString ());
-							Console.WriteLine ("a_nullable_jsonb : " + cmd.DRH.GetJsonb ("a_nullable_jsonb").ToString ());
-							Console.WriteLine ("an_inet : " + cmd.DRH.GetIpAddress ("an_inet").ToString ());
-						}
-					}
-				}
-			}
-			*/
 			IList<string> results = new Connect ("Test").Query ("select * from dts;").Go<IList<string>> (getStrings);
 
 			foreach (string result in results) {
 				Console.WriteLine (result);
 			}
+			*/
 
 			// =========================================================================================
 

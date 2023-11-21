@@ -130,9 +130,9 @@ namespace com.janoserdelyi.DataSource
 			//this will automatically generate a DataReaderHelper as well
 			switch (this.connection.DatabaseType) {
 				case DatabaseType.MSSQL:
-					throw new NotSupportedException ("MSSQL removed");
-				//this.dataReaderHelper = new DataReaderHelperMssql ();
-				//break;
+					//throw new NotSupportedException ("MSSQL removed");
+					this.dataReaderHelper = new DataReaderHelperMssql ();
+					break;
 				case DatabaseType.Postgresql:
 					this.dataReaderHelper = new DataReaderHelperPostgresql ();
 					break;

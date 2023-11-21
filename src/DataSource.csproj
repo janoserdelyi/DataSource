@@ -9,8 +9,9 @@
 		<AssemblyName>DataSource</AssemblyName>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="MySqlConnector" Version="2.1.13"/>
-		<PackageReference Include="Npgsql" Version="6.0.7"/>
-		<!-- <PackageReference Include="System.Data.SqlClient" Version="4.8.4"/> -->
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.2" />
+		<PackageReference Include="MySqlConnector" Version="2.1.13" />
+		<PackageReference Include="Npgsql" Version="6.0.7" />
+		<!-- <PackageReference Include="System.Data.SqlClient" Version="4.8.5" /> -->
 	</ItemGroup>
 </Project>

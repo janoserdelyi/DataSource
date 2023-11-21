@@ -39,6 +39,7 @@ namespace com.janoserdelyi.DataSource
 
 		//
 		DateTime GetDateTime (string column);
+		DateTimeOffset GetDateTimeOffset (string column);
 
 		// added 2014-10-05 janos. i was hoping i would never need this gross crap. NYC data storing times, floating in space, like "09:00"
 		TimeSpan GetTimeSpan (string column);

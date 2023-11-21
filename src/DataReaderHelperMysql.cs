@@ -78,6 +78,10 @@ namespace com.janoserdelyi.DataSource
 			return dr.GetDateTime (ord);
 		}
 
+		public DateTimeOffset GetDateTimeOffset (string column) {
+			throw new InvalidOperationException ("GetDateTimeOffset is not programmed yet for Mysql");
+		}
+
 		public TimeSpan GetTimeSpan (string column) {
 			throw new InvalidOperationException ("GetTimeSpan is not programmed yet for Mysql");
 		}
