@@ -5,6 +5,8 @@ A seriously old (2004'ish?) shim layer for data access that i have been updating
 This can be used to connect to Postgresql, MSSQL, and MySQL. There was some stubbing in for SQLite, but it's incomplete.
 As of this writing it's really only been used for Postgresql for about 6 years so MSSQL and MySQL are bound to have fallen behind some.
 
+This code can likely use an overhaul, and yes it's ugly. But it does have one thing going for it - it's been used in projects for nearly 20 years in some form or fashion so it has been well-tested!
+
 ## Creating Connections
 
 Named connections can be created two ways :
