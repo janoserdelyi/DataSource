@@ -2,16 +2,23 @@
 	<PropertyGroup>
 		<TargetFramework>netstandard2.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+		<PackageId>com.janoserdelyi.DataSource</PackageId>
 		<Authors>Janos Erdelyi</Authors>
+		<Company>Janos Erdelyi</Company>
 		<Product>DataSource</Product>
 		<Description>Ancient but helpful shim layer for managing database access. Primarily PostgreSQL, but also works for MSSQL and MySQL</Description>
 		<Version>1.2.0</Version>
 		<AssemblyName>DataSource</AssemblyName>
+		<!-- for packaging -->
+		<EnablePackageValidation>true</EnablePackageValidation>
+    	<!-- Optional: Detect breaking changes from a previous stable version -->
+    	<!-- <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion> -->
+		<!-- automatically generate package on build -->
+		<!-- <GeneratePackageOnBuild>true</GeneratePackageOnBuild> -->
 	</PropertyGroup>
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.2" />
-		<PackageReference Include="MySqlConnector" Version="2.1.13" />
+		<PackageReference Include="MySqlConnector" Version="2.3.1" />
 		<PackageReference Include="Npgsql" Version="6.0.7" />
-		<!-- <PackageReference Include="System.Data.SqlClient" Version="4.8.5" /> -->
 	</ItemGroup>
 </Project>
