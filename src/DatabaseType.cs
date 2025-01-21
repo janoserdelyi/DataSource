@@ -1,12 +1,9 @@
-﻿using System;
+﻿namespace com.janoserdelyi.DataSource;
 
-namespace com.janoserdelyi.DataSource
+public enum DatabaseType : int
 {
-	public enum DatabaseType : int
-	{
-		MSSQL = 0,
-		Postgresql = 1,
-		MySql = 2,
-		Sqlite = 4
-	}
+	MSSQL = 0,
+	Postgresql = 1,
+	MySql = 2,
+	Sqlite = 4
 }

@@ -37,11 +37,11 @@ namespace com.janoserdelyi.DataSource
 			string commandText
 		) {
 			if (string.IsNullOrEmpty (commandText)) {
-				throw new System.ArgumentNullException ("Command Text may not be null.");
+				throw new System.ArgumentNullException (nameof (commandText));
 			}
 
 			//nothing fancy here
-			DbCommand command = null;
+			DbCommand command;
 			switch (this.databaseType) {
 				case DatabaseType.MSSQL:
 					//throw new NotSupportedException ("MSSQL removed");
@@ -57,6 +57,8 @@ namespace com.janoserdelyi.DataSource
 					//command = new MySql.Data.MySqlClient.MySqlCommand (commandText, (MySql.Data.MySqlClient.MySqlConnection)this.baseConnection);
 					command.CommandType = CommandType.StoredProcedure;
 					return command;
+				default:
+					throw new System.ArgumentException ("Invalid database type supplied : " + databaseType.ToString ());
 			}
 
 			throw new System.ArgumentException ("Invalid database type supplied : " + databaseType.ToString ());
@@ -77,7 +79,7 @@ namespace com.janoserdelyi.DataSource
 		}
 		#endregion
 
-		#region abstract DbConneciton inheritor obligations
+		#region abstract DbConnection inheritor obligations
 		public override void Open () {
 			if (baseConnection.State != ConnectionState.Open) {
 				baseConnection.Open ();
@@ -94,7 +96,7 @@ namespace com.janoserdelyi.DataSource
 			baseConnection.ChangeDatabase (databaseName);
 		}
 
-		public override event StateChangeEventHandler StateChange;
+		//public override event StateChangeEventHandler StateChange;
 
 		public override void Close () {
 			if (baseConnection.State != ConnectionState.Closed) {

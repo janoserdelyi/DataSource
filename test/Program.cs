@@ -47,7 +47,7 @@ namespace test
 			};
 			ConnectionManager.Instance.AddConnection (mssqlConnection);
 
-			int recordCount = new Connect ("mssql").Query ("select count(*) as cnt from foo.inventory;").Go<int> ((cmd) => {
+			int? recordCount = new Connect ("mssql").Query ("select count(*) as cnt from foo.inventory;").Go<int?> ((cmd) => {
 				using (IDataReader dr = cmd.ExecuteReader ()) {
 					if (dr.Read ()) {
 						return cmd.DRH.GetInt ("cnt");
@@ -56,7 +56,7 @@ namespace test
 				}
 			});
 
-			(DateTime dt, DateTimeOffset dto) foo = new Connect ("mssql").Query ("select create_dt, convert(datetime, create_dt) as dt from foo.inventory;").Go<(DateTime dt, DateTimeOffset dto)> ((cmd) => {
+			(DateTime? dt, DateTimeOffset? dto) foo = new Connect ("mssql").Query ("select create_dt, convert(datetime, create_dt) as dt from foo.inventory;").Go<(DateTime? dt, DateTimeOffset? dto)> ((cmd) => {
 				using (IDataReader dr = cmd.ExecuteReader ()) {
 					if (dr.Read ()) {
 						return (cmd.DRH.GetDateTime ("dt"), cmd.DRH.GetDateTimeOffset ("create_dt"));

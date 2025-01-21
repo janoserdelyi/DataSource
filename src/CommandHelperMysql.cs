@@ -1,8 +1,7 @@
 ﻿using System;
-using System.Text;
 using System.Data;
 using System.Data.Common;
-
+using System.Text;
 using MySqlConnector;
 //using MySql;
 //using MySql.Data;
@@ -181,6 +180,30 @@ namespace com.janoserdelyi.DataSource
 				command.Parameters[param].Value = DBNull.Value;
 			} else {
 				command.Parameters[param].Value = val;
+			}
+		}
+
+		public void AppendNvarchar (
+			string param,
+			string value
+		) {
+			command.Parameters.Add (new MySqlParameter (param, SqlDbType.NVarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
+			if (value == null) {
+				command.Parameters[param].Value = DBNull.Value;
+			} else {
+				command.Parameters[param].Value = value;
+			}
+		}
+
+		public void AppendVarchar (
+			string param,
+			string value
+		) {
+			command.Parameters.Add (new MySqlParameter (param, SqlDbType.VarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
+			if (value == null) {
+				command.Parameters[param].Value = DBNull.Value;
+			} else {
+				command.Parameters[param].Value = value;
 			}
 		}
 

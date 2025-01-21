@@ -21,7 +21,7 @@ namespace com.janoserdelyi.DataSource
 			string commandText
 		) {
 			if (string.IsNullOrEmpty (commandText)) {
-				throw new System.ArgumentNullException ("commandText");
+				throw new System.ArgumentNullException (nameof (commandText));
 			}
 
 			this.connection = connection;
@@ -64,7 +64,6 @@ namespace com.janoserdelyi.DataSource
 			}
 			set {
 				this.baseCommand.Connection = value;
-				//throw new NotImplementedException();
 			}
 		}
 
@@ -72,7 +71,7 @@ namespace com.janoserdelyi.DataSource
 			return this.baseCommand.ExecuteNonQuery ();
 		}
 
-		public override object ExecuteScalar () {
+		public override object? ExecuteScalar () {
 			return this.baseCommand.ExecuteScalar ();
 		}
 
@@ -161,10 +160,10 @@ namespace com.janoserdelyi.DataSource
 			get { return commandHelper; }
 		}
 
-		public IDataReaderHelper DataReaderHelper {
+		public IDataReaderHelper? DataReaderHelper {
 			get { return dataReaderHelper; }
 		}
-		public IDataReaderHelper DRH {
+		public IDataReaderHelper? DRH {
 			get { return dataReaderHelper; }
 		}
 
@@ -178,10 +177,10 @@ namespace com.janoserdelyi.DataSource
 			}
 		}
 
-		private Connection connection;
+		private readonly Connection connection;
 		private DbCommand baseCommand;
-		private ICommandHelper commandHelper;
-		private IDataReaderHelper dataReaderHelper;
+		private readonly ICommandHelper commandHelper;
+		private IDataReaderHelper? dataReaderHelper;
 
 	}
 }

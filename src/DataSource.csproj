@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFramework>netstandard2.0</TargetFramework>
+		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PackageId>com.janoserdelyi.DataSource</PackageId>
 		<Authors>Janos Erdelyi</Authors>
 		<Company>Janos Erdelyi</Company>
 		<Product>DataSource</Product>
 		<Description>Ancient but helpful shim layer for managing database access. Primarily PostgreSQL, but also works for MSSQL and MySQL</Description>
-		<Version>1.3.0</Version>
+		<Version>1.5.1</Version>
 		<AssemblyName>DataSource</AssemblyName>
 		<!-- for packaging -->
 		<EnablePackageValidation>true</EnablePackageValidation>
@@ -15,10 +15,17 @@
     	<!-- <PackageValidationBaselineVersion>1.0.0</PackageValidationBaselineVersion> -->
 		<!-- automatically generate package on build -->
 		<!-- <GeneratePackageOnBuild>true</GeneratePackageOnBuild> -->
+		<!-- <PackageLicenseExpression>AGPL</PackageLicenseExpression> -->
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
 	</PropertyGroup>
 	<ItemGroup>
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.2" />
-		<PackageReference Include="MySqlConnector" Version="2.3.1" />
-		<PackageReference Include="Npgsql" Version="6.0.7" />
+		<None Include="../README.md" Pack="true" PackagePath="/"/>
+		<None Include="../LICENSE" Pack="true" PackagePath="/"/>
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
+		<PackageReference Include="MySqlConnector" Version="2.3.7" />
+		<PackageReference Include="Npgsql" Version="8.0.3" />
 	</ItemGroup>
 </Project>

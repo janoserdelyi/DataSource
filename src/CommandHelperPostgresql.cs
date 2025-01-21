@@ -202,6 +202,22 @@ namespace com.janoserdelyi.DataSource
 			}
 		}
 
+		// mssql trash
+		public void AppendNvarchar (
+			string param,
+			string value
+		) {
+			Append (param, value);
+		}
+
+		// mssql trash
+		public void AppendVarchar (
+			string param,
+			string value
+		) {
+			Append (param, value);
+		}
+
 		/// <summary></summary>
 		/// <remarks>none</remarks>
 		/// <returns>void</returns>

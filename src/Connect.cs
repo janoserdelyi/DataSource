@@ -14,8 +14,8 @@ namespace com.janoserdelyi.DataSource
 		/*
 
 		*/
-		private string connectionName { get; set; }
-		private string query { get; set; }
+		private string? connectionName { get; set; }
+		private string? query { get; set; }
 		private Connection connection { get; set; }
 		private Command command { get; set; }
 
@@ -38,6 +38,24 @@ namespace com.janoserdelyi.DataSource
 			this.query = query;
 			this.command = this.connection.GetCommand (query);
 			this.command.CommandType = System.Data.CommandType.Text;
+			return this;
+		}
+
+		public Connect Function (
+			string func
+		) {
+			this.query = query;
+			this.command = this.connection.GetCommand (func);
+			this.command.CommandType = System.Data.CommandType.StoredProcedure;
+			return this;
+		}
+
+		public Connect Procedure (
+			string proc
+		) {
+			this.query = query;
+			this.command = this.connection.GetCommand (proc);
+			this.command.CommandType = System.Data.CommandType.StoredProcedure;
 			return this;
 		}
 
@@ -77,6 +95,20 @@ namespace com.janoserdelyi.DataSource
 			string value
 		) {
 			this.command.CH.Append (name, value);
+			return this;
+		}
+		public Connect AppendNvarchar (
+			string name,
+			string value
+		) {
+			this.command.CH.AppendNvarchar (name, value);
+			return this;
+		}
+		public Connect AppendVarchar (
+			string name,
+			string value
+		) {
+			this.command.CH.AppendVarchar (name, value);
 			return this;
 		}
 
