@@ -149,6 +149,15 @@ public class Connect {
 
 	public Connect Append (
 		string name,
+		DateTimeOffset value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
 		short value
 	) {
 		ArgumentNullException.ThrowIfNull (this.command);
