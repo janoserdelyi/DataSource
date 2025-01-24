@@ -27,6 +27,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetInt32 (ord);
 	}
 
@@ -34,12 +37,18 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetInt64 (ord);
 	}
 	public long? GetInt64 ( string column ) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetInt64 (ord);
 	}
 
@@ -47,6 +56,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetInt16 (ord);
 	}
 
@@ -54,6 +66,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetByte (ord);
 	}
 
@@ -61,6 +76,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetBoolean (ord);
 	}
 
@@ -68,8 +86,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
-		ArgumentNullException.ThrowIfNull (dr);
-
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetSqlMoney (ord).ToDecimal ();
 	}
 
@@ -77,6 +96,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetDecimal (ord);
 	}
 
@@ -90,9 +112,8 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		var ord = dr.GetOrdinal (column);
 		if (dr.IsDBNull (ord)) {
 			return null;
-		} else {
-			return dr.GetString (ord);
 		}
+		return dr.GetString (ord);
 	}
 
 	public DateTime? GetDateTime ( string column ) {
@@ -106,6 +127,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetDateTimeOffset (ord);
 	}
 
@@ -117,6 +141,9 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return dr.GetGuid (ord);
 	}
 
@@ -126,12 +153,18 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (int[])dr.GetValue (ord);
 	}
 	public int[,]? GetIntArray2D ( string column ) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (int[,])dr.GetValue (ord);
 	}
 
@@ -139,24 +172,36 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (long[])dr.GetValue (ord);
 	}
 	public double[]? GetDoubleArray ( string column ) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (double[])dr.GetValue (ord);
 	}
 	public DateTime[]? GetDateTimeArray ( string column ) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (DateTime[])dr.GetValue (ord);
 	}
 	public string[]? GetStringArray ( string column ) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
 		return (string[])dr.GetValue (ord);
 	}
 
