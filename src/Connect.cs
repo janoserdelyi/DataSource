@@ -1,342 +1,395 @@
-using System;
+namespace com.janoserdelyi.DataSource;
 
-namespace com.janoserdelyi.DataSource
-{
-	public class Connect
-	{
-		// i wonder if i could produce structures to allow for syntax like :
-		// insert - 
-		// new Connect("connection name").Query("insert into...").Append("param1Name", param1Value).Append("param2Name", param2Value).Go();
+public class Connect {
+	// i wonder if i could produce structures to allow for syntax like :
+	// insert -
+	// new Connect("connection name").Query("insert into...").Append("param1Name", param1Value).Append("param2Name", param2Value).Go();
 
-		// select? not sure how i would want to distingush looping results vs not. ICollection detection?
-		// SomeReturnType ret = new Connect("connection name").Query("insert into...").Append("param1Name", param1Value).Append("param2Name", param2Value).Go<return type>();
+	// select? not sure how i would want to distingush looping results vs not. ICollection detection?
+	// SomeReturnType ret = new Connect("connection name").Query("insert into...").Append("param1Name", param1Value).Append("param2Name", param2Value).Go<return type>();
 
-		/*
+	/*
 
-		*/
-		private string? connectionName { get; set; }
-		private string? query { get; set; }
-		private Connection connection { get; set; }
-		private Command command { get; set; }
+	*/
+	private string? connectionName { get; set; }
+	private string? query { get; set; }
+	private Connection connection { get; set; }
+	private Command? command { get; set; }
 
-		public Connect (
-			string connectionName
-		) {
-			this.connectionName = connectionName;
-			this.connection = ConnectionManager.Instance.GetConnection (connectionName, false);
-		}
-
-		public Connect (
-			Connection connection
-		) {
-			this.connection = connection;
-		}
-
-		public Connect Query (
-			string query
-		) {
-			this.query = query;
-			this.command = this.connection.GetCommand (query);
-			this.command.CommandType = System.Data.CommandType.Text;
-			return this;
-		}
-
-		public Connect Function (
-			string func
-		) {
-			this.query = query;
-			this.command = this.connection.GetCommand (func);
-			this.command.CommandType = System.Data.CommandType.StoredProcedure;
-			return this;
-		}
-
-		public Connect Procedure (
-			string proc
-		) {
-			this.query = query;
-			this.command = this.connection.GetCommand (proc);
-			this.command.CommandType = System.Data.CommandType.StoredProcedure;
-			return this;
-		}
-
-		public int Go () {
-			this.connection.OpenAsync ();
-			using (this.connection) {
-				using (this.command) {
-					return this.command.ExecuteNonQueryAsync ().Result;
-				}
-			}
-		}
-
-		// i'm considering requiring an interface on this 
-		// and likely take a func<> for loading the object
-		public T Go<T> (Func<com.janoserdelyi.DataSource.Command, T> loadObj) { //where T : new() {
-
-			this.connection.OpenAsync ();
-			using (this.connection) {
-				using (this.command) {
-					//using (System.Data.IDataReader dr = this.command.ExecuteReader ()) {
-					//T rets = new T ();
-					//T rets = (T)Activator.CreateInstance<T> ();
-					//while (dr.Read ()) {
-					//	rets.Add ("foo");
-					//}
-					return loadObj (this.command);
-					//}
-				}
-			}
-
-			//object foo = "weee";
-			//return (T)Convert.ChangeType (foo, typeof (T));
-		}
-
-		public Connect Append (
-			string name,
-			string value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-		public Connect AppendNvarchar (
-			string name,
-			string value
-		) {
-			this.command.CH.AppendNvarchar (name, value);
-			return this;
-		}
-		public Connect AppendVarchar (
-			string name,
-			string value
-		) {
-			this.command.CH.AppendVarchar (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			int value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			long value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			DateTime value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			short value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			bool value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			byte value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			TimeSpan value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			Guid value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			string[] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			int[] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			int[,] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			long[] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			double[] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			DateTime[] value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			System.Net.IPAddress value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect AppendJson (
-			string name,
-			string value
-		) {
-			this.command.CH.AppendJson (name, value);
-			return this;
-		}
-
-		public Connect AppendJsonb (
-			string name,
-			string value
-		) {
-			this.command.CH.AppendJsonb (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			int? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			long? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			DateTime? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			Guid? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			decimal? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			short? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			bool? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			byte? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			char? value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			System.Collections.BitArray value
-		) {
-			this.command.CH.Append (name, value);
-			return this;
-		}
-
-		public Connect Append (
-			string name,
-			System.Collections.BitArray value,
-			int size
-		) {
-			this.command.CH.Append (name, value, size);
-			return this;
-		}
-
-
+	public Connect (
+		string connectionName
+	) {
+		this.connectionName = connectionName;
+		this.connection = ConnectionManager.Instance.GetConnection (connectionName, false);
 	}
+
+	public Connect (
+		Connection connection
+	) {
+		this.connection = connection;
+	}
+
+	public Connect Query (
+		string query
+	) {
+		this.query = query;
+		this.command = this.connection.GetCommand (query);
+		this.command.CommandType = CommandType.Text;
+		return this;
+	}
+
+	public Connect Procedure (
+		string query
+	) {
+		this.query = query;
+		this.command = this.connection.GetCommand (query);
+		this.command.CommandType = CommandType.StoredProcedure;
+		return this;
+	}
+
+	public Connect Function (
+		string query
+	) {
+		this.query = query;
+		this.command = this.connection.GetCommand (query);
+		this.command.CommandType = CommandType.StoredProcedure;
+		return this;
+	}
+
+	public int Go () {
+		ArgumentNullException.ThrowIfNull (this.command);
+
+		this.connection.OpenAsync ();
+		using (this.connection) {
+			using (this.command) {
+				return this.command.ExecuteNonQueryAsync ().Result;
+			}
+		}
+	}
+
+	// i'm considering requiring an interface on this
+	// and likely take a func<> for loading the object
+	public T Go<T> (
+		Func<com.janoserdelyi.DataSource.Command, T> loadObj
+	) { //where T : new() {
+		ArgumentNullException.ThrowIfNull (this.command);
+
+		this.connection.OpenAsync ();
+		using (this.connection) {
+			using (this.command) {
+				return loadObj (this.command);
+			}
+		}
+	}
+
+	public Connect Append (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	// for mssql
+	public Connect Append (
+		string name,
+		string value,
+		int length,
+		bool isReturnValue = false
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value, length);
+		return this;
+	}
+
+	public Connect AppendNvarchar (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.AppendNvarchar (name, value);
+		return this;
+	}
+	public Connect AppendVarchar (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.AppendVarchar (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		int value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		long value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		DateTime value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		short value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		bool value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		byte value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		TimeSpan value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		Guid value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		string[] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		int[] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		int[,] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		long[] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		double[] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		DateTime[] value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		System.Net.IPAddress value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect AppendJson (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.AppendJson (name, value);
+		return this;
+	}
+
+	public Connect AppendJsonb (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.AppendJsonb (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		int? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		long? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		DateTime? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		Guid? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		decimal? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		short? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		bool? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		byte? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		char? value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		System.Collections.BitArray value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		System.Collections.BitArray value,
+		int size
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value, size);
+		return this;
+	}
+
+	public Connect Return (
+		string param,
+		SqlDbType dbtype
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Return (param, dbtype);
+		return this;
+	}
+
+	public Connect Return (
+		string param,
+		SqlDbType dbtype,
+		int size
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Return (param, dbtype, size);
+		return this;
+	}
+
 }

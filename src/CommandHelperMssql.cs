@@ -1,19 +1,12 @@
-﻿using System;
-using System.Data;
-using System.Data.Common;
 using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource;
 
-/// <summary>
-/// Summary description for CommandHelper.
-/// </summary>
-public class CommandHelperMssql : ICommandHelper, IDisposable
-{
-	///<summary>Constructor for CommandHelper</summary>
-	public CommandHelperMssql () {
+public class CommandHelperMssql : ICommandHelper, IDisposable {
 
+	public CommandHelperMssql () {
+		command = new SqlCommand ();
 	}
 
 	public DbCommand Command {
@@ -27,8 +20,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			//command.Dispose();
 		}
 	}
-
-	#region Regular Types
 
 	/// <summary></summary>
 	/// <remarks>none</remarks>
@@ -177,6 +168,12 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			command.Parameters[param].Value = value;
 	}
 
+	public void Append (
+		string param,
+		string value
+	) {
+		throw new NotImplementedException ();
+	}
 	/// <summary></summary>
 	/// <remarks>none</remarks>
 	/// <returns>void</returns>
@@ -191,12 +188,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			command.Parameters[param].Value = DBNull.Value;
 		else
 			command.Parameters[param].Value = value;
-	}
-	public void Append (
-		string param,
-		string value
-	) {
-		throw new NotImplementedException ();
 	}
 
 	/// <summary></summary>
@@ -232,34 +223,34 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 	}
 
 
-	public void Append (string param, int[] value) {
+	public void Append ( string param, int[] value ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, long[] value) {
+	public void Append ( string param, long[] value ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, double[] value) {
+	public void Append ( string param, double[] value ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, DateTime[] value) {
+	public void Append ( string param, DateTime[] value ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, string[] value) {
+	public void Append ( string param, string[] value ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, int[,] value) {
+	public void Append ( string param, int[,] value ) {
 		throw new NotImplementedException ();
 	}
 
-	public void AppendNumeric (string param, decimal value) {
+	public void AppendNumeric ( string param, decimal value ) {
 		throw new NotImplementedException ();
 	}
 
 	// 2013-01-29
-	public void AppendInet (string param, string value, int netmask = 32) {
+	public void AppendInet ( string param, string value, int netmask = 32 ) {
 		throw new NotImplementedException ();
 	}
-	public void Append (string param, System.Net.IPAddress value, int netmask = 32) {
+	public void Append ( string param, System.Net.IPAddress value, int netmask = 32 ) {
 		AppendInet (param, value.ToString ());
 	}
 
@@ -285,6 +276,7 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
 
+
 	// 2018-04-04
 	public void Append (
 		string param,
@@ -299,9 +291,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 	) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	#endregion
-
-	#region Nullable<t> Types
 
 	/// <summary></summary>
 	/// <remarks>none</remarks>
@@ -458,14 +447,26 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			command.Parameters[param].Value = DBNull.Value;
 	}
 
-	#endregion
+	public void Return (
+		string param,
+		SqlDbType dbtype
+	) {
+		var p = new SqlParameter (param, dbtype);
+		p.Direction = ParameterDirection.ReturnValue;
+		command.Parameters.Add (p);
+	}
 
-	#region table types
+	public void Return (
+		string param,
+		SqlDbType dbtype,
+		int size
+	) {
+		var p = new SqlParameter (param, dbtype, size);
+		p.Direction = ParameterDirection.ReturnValue;
+		command.Parameters.Add (p);
+	}
 
-	#endregion
-
-	// i don't recall why this exists
-	private string Join (char[] ary) {
+	private string Join ( char[] ary ) {
 		StringBuilder sb = new StringBuilder (8);
 		for (int i = 0; i < ary.Length; i++) {
 			sb.Append (ary[i]);

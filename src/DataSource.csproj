@@ -1,13 +1,13 @@
 <Project Sdk="Microsoft.NET.Sdk">
 	<PropertyGroup>
-		<TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+		<TargetFramework>net8.0</TargetFramework>
 		<CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
 		<PackageId>com.janoserdelyi.DataSource</PackageId>
 		<Authors>Janos Erdelyi</Authors>
 		<Company>Janos Erdelyi</Company>
 		<Product>DataSource</Product>
 		<Description>Ancient but helpful shim layer for managing database access. Primarily PostgreSQL, but also works for MSSQL and MySQL</Description>
-		<Version>1.5.1</Version>
+		<Version>1.5.2</Version>
 		<AssemblyName>DataSource</AssemblyName>
 		<!-- for packaging -->
 		<EnablePackageValidation>true</EnablePackageValidation>
@@ -24,8 +24,8 @@
 	<ItemGroup>
 		<None Include="../README.md" Pack="true" PackagePath="/"/>
 		<None Include="../LICENSE" Pack="true" PackagePath="/"/>
-		<PackageReference Include="Microsoft.Data.SqlClient" Version="5.2.1" />
-		<PackageReference Include="MySqlConnector" Version="2.3.7" />
-		<PackageReference Include="Npgsql" Version="8.0.3" />
+		<PackageReference Include="Microsoft.Data.SqlClient" Version="6.0.1" />
+		<PackageReference Include="MySqlConnector" Version="2.4.0" />
+		<PackageReference Include="Npgsql" Version="9.0.2" />
 	</ItemGroup>
 </Project>

@@ -1,12 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
 using System.Text;
 
 namespace com.janoserdelyi.DataSource;
 
 
-public class ConnectionPropertyBag
-{
+public class ConnectionPropertyBag {
 	public ConnectionPropertyBag () {
 
 	}
@@ -20,29 +17,35 @@ public class ConnectionPropertyBag
 		if (!parsedStrings.ContainsKey (connectionString)) {
 			parsedStrings.Add (connectionString, Parse (connectionString, dbType));
 		}
+		if (!parsedStrings.ContainsKey (connectionString)) {
+			parsedStrings.Add (connectionString, Parse (connectionString, dbType));
+		}
 
 		return parsedStrings[connectionString];
 	}
 
 	public DatabaseType DatabaseType { get; set; }
-	public string Name { get; set; }
-	public string Server { get; set; }
-	public string Database { get; set; }
+	public string? Name { get; set; }
+	public string? Server { get; set; }
+	public string? Database { get; set; }
 	public string? Username { get; set; }
 	public string? Password { get; set; }
 	public string? Passfile { get; set; }
-	public string? Port { get; set; }
+	public string? Port { get; set; } // TODO: really should be an int
 	public string? Encoding { get; set; }
 	public bool? Pooling { get; set; }
 	public string? MaxPoolSize { get; set; }
 	public string? MinPoolSize { get; set; }
-	public string? Timeout { get; set; }
-	// 2014-08-01 janos. added
-	public string? CommandTimeout { get; set; }
+	public string? Timeout { get; set; } // TODO: really should be an int
+										 // 2014-08-01 janos. added
+	public string? CommandTimeout { get; set; }// TODO: really should be an int
 	public string? ApplicationName { get; set; }
 	public string? Keepalive { get; set; }
 	// 2023-03-13
-	public bool IncludeErrorDetail { get; set; } = false;
+	public bool? IncludeErrorDetail { get; set; }
+	// 2024-10-29
+	public string? IntegratedSecurity { get; set; }
+	public bool? Encrypt { get; set; }
 
 	private static Dictionary<string, ConnectionPropertyBag> parsedStrings { get; set; } = new Dictionary<string, ConnectionPropertyBag> ();
 
@@ -53,11 +56,11 @@ public class ConnectionPropertyBag
 		//i used to allow a default for older projects. older projects will be using an older dll.
 
 		switch (this.DatabaseType) {
-			case DatabaseType.MSSQL:
+			case com.janoserdelyi.DataSource.DatabaseType.MSSQL:
 				return makeMssqlConnectionString ();
-			case DatabaseType.Postgresql:
+			case com.janoserdelyi.DataSource.DatabaseType.Postgresql:
 				return makePostgresqlConnectionString ();
-			case DatabaseType.MySql:
+			case com.janoserdelyi.DataSource.DatabaseType.MySql:
 				return makeMysqlConnectionString ();
 			default:
 				throw new ArgumentException (this.DatabaseType.ToString () + "  is not a supported Database type");
@@ -80,23 +83,51 @@ public class ConnectionPropertyBag
 
 		// 2018-11-13. trim out spaces after semi-colons.
 		connectionString = System.Text.RegularExpressions.Regex.Replace (connectionString, ";\\s+", ";");
+		// 2018-11-13. trim out spaces after semi-colons.
+		connectionString = System.Text.RegularExpressions.Regex.Replace (connectionString, ";\\s+", ";");
 
 		//the name is original string passed in
 		bag.Name = connectionString;
+		//the name is original string passed in
+		bag.Name = connectionString;
 
-		if (dbType == DatabaseType.MSSQL) {
+		if (dbType == com.janoserdelyi.DataSource.DatabaseType.MSSQL) {
 			/*	take what i get an try to get these parts:
 				server[,<port>];database;[uid;pwd;]
 			*/
 			string[] parts = connectionString.Split (';');
+
 			foreach (string part in parts) {
-				//ghetto time!
 
 				// 2018-11-13 overwrite the bag name if one is suplied in the connection string
 				if (part.ToLower ().StartsWith ("name", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Name = part.Split ('=')[1];
 				}
+				// 2018-11-13 overwrite the bag name if one is suplied in the connection string
+				if (part.ToLower ().StartsWith ("name", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Name = part.Split ('=')[1];
+				}
 
+				if (part.ToLower ().StartsWith ("server", StringComparison.CurrentCultureIgnoreCase)) {
+					//this is most variable one of the group
+					//it can be server=xxx.xxx.xxx.xxx;
+					//or server=xxx.xxx.xxx.xxx,yyyyy; where y is the port
+					if (part.Contains (",")) {
+						bag.Server = part.Split (',')[0].Substring ("server=".Length);
+						bag.Port = part.Split (',')[1];
+					} else {
+						bag.Server = part.Split ('=')[1];
+					}
+				}
+				if (part.ToLower ().StartsWith ("database", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Database = part.Split ('=')[1];
+				}
+				if (part.ToLower ().StartsWith ("uid", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Username = part.Split ('=')[1];
+				}
+				if (part.ToLower ().StartsWith ("pwd", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Password = part.Split ('=')[1];
+				}
 				if (part.ToLower ().StartsWith ("server", StringComparison.CurrentCultureIgnoreCase)) {
 					//this is most variable one of the group
 					//it can be server=xxx.xxx.xxx.xxx;
@@ -124,7 +155,19 @@ public class ConnectionPropertyBag
 				if (part.ToLower ().StartsWith ("password", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Password = part.Split ('=')[1];
 				}
+				if (part.ToLower ().StartsWith ("user id", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Username = part.Split ('=')[1];
+				}
+				if (part.ToLower ().StartsWith ("password", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Password = part.Split ('=')[1];
+				}
 
+				if (part.ToLower ().StartsWith ("max pool size", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.MaxPoolSize = part.Split ('=')[1];
+				}
+				if (part.ToLower ().StartsWith ("min pool size", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.MinPoolSize = part.Split ('=')[1];
+				}
 				if (part.ToLower ().StartsWith ("max pool size", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.MaxPoolSize = part.Split ('=')[1];
 				}
@@ -141,14 +184,25 @@ public class ConnectionPropertyBag
 				if (part.ToLower ().StartsWith ("application name", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.ApplicationName = part.Split ('=')[1];
 				}
+				// 2012-08-01. to help identify distinct connections in the database
+				if (part.ToLower ().StartsWith ("application name", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.ApplicationName = part.Split ('=')[1];
+				}
 
+				// 2024-10-29
+				if (part.ToLower ().StartsWith ("integrated security", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.IntegratedSecurity = part.Split ('=')[1];
+				}
+				if (part.ToLower ().StartsWith ("Encrypt", StringComparison.CurrentCultureIgnoreCase)) {
+					bag.Encrypt = part.Split ('=')[1].ToLower () == "true" ? true : false;
+				}
 
 				//yep, i seem to be discarding everything else.
 				//TODO: think about how to add on all the other potential options in the connection string
 			}
 		}
 
-		if (dbType == DatabaseType.Postgresql) {
+		if (dbType == com.janoserdelyi.DataSource.DatabaseType.Postgresql) {
 			// example:
 			// Server=192.168.1.61;Port=5432;User Id=merryfool;Password=pitythefool;Database=merryfool_db;encoding=unicode;
 			string[] parts = connectionString.Split (separator, StringSplitOptions.RemoveEmptyEntries);
@@ -221,7 +275,7 @@ public class ConnectionPropertyBag
 			}
 		}
 
-		if (dbType == DatabaseType.MySql) {
+		if (dbType == com.janoserdelyi.DataSource.DatabaseType.MySql) {
 			//example:
 			//server=50.56.110.52;port=3306;database=manhattan_ewbtesst;uid=dobiesync;pwd=dobiedoo;
 			string[] parts = connectionString.Split (';');
@@ -284,49 +338,50 @@ public class ConnectionPropertyBag
 		*/
 		var sb = new StringBuilder ();
 
-		//server
 		sb.Append ("server=").Append (Server);
 		if (Port != null && !Port.Equals ("1433")) {
-			sb.Append (",").Append (Port);
+			sb.Append (',').Append (Port);
 		}
 		sb.Append (';');
 
-		//database
-		sb.Append ("database=").Append (Database).Append (';');
+		sb.Append ($"database={Database};");
 
-		//username
 		if (!string.IsNullOrEmpty (Username)) {
-			sb.Append ("uid=").Append (Username).Append (";pwd=").Append (Password);
-		} else {
-			sb.Append ("Integrated Security=SSPI");
+			sb.Append ($"uid={Username};pwd={Password};");
 		}
-		sb.Append (';');
 
 		if (MinPoolSize != null) {
-			sb.Append ("Min Pool Size=").Append (MinPoolSize).Append (';');
+			sb.Append ($"Min Pool Size={MinPoolSize};");
 		}
 
 		if (MaxPoolSize != null) {
-			sb.Append ("Max Pool Size=").Append (MaxPoolSize).Append (';');
+			sb.Append ($"Max Pool Size={MaxPoolSize}");
 		}
 
 		if (Timeout != null) {
-			sb.Append ("Connection Timeout=").Append (Timeout).Append (';');
+			sb.Append ($"Connection Timeout={Timeout}");
 		}
 
 		if (ApplicationName != null) {
-			sb.Append ("Application Name=").Append (ApplicationName).Append (';');
+			sb.Append ($"Application Name={ApplicationName}");
 		}
 
 		//"App=HCL;"
 		//"Connection Reset=false;"
+		//"App=HCL;"
+		//"Connection Reset=false;"
 
-		// temp. i need flags for this
-		sb.Append ("Encrypt=false;");
-		// another option is 
+		if (IntegratedSecurity != null) {
+			sb.Append ($"Integrated Security={IntegratedSecurity};");
+		}
+		if (Encrypt != null) {
+			sb.Append ($"Encrypt={(Encrypt.Value ? "true" : "false")};");
+		}
+
+		// another option is
 		// TrustServerCertificate=True
 
-		//other features will be added as i actuall use them. i don't think i'm going
+		//other features will be added as i actually use them. i don't think i'm going
 		//to try to cover a bunch of cases that i don't actually encounter in production
 
 		return sb.ToString ();
@@ -340,12 +395,23 @@ public class ConnectionPropertyBag
 		//2007 11 18 janos erdelyi
 		//adding encoding=unicode to the string
 		//i need to really add encoding as an option
+		//example:
+		//"Server=192.168.1.61;Port=5432;User Id=merryfool;Password=pitythefool;Database=merryfool_db;encoding=unicode;"
+		//"Server=127.0.0.1;Port=59000;User Id=postgres;Password=doggiedoo;Database=logging;""
+		//2007 11 18 janos erdelyi
+		//adding encoding=unicode to the string
+		//i need to really add encoding as an option
 
 		//testing pooling issues
 		//Pooling : true or false
 		//MinPoolSize : default 1
 		//MaxPoolSize : default 2
+		//testing pooling issues
+		//Pooling : true or false
+		//MinPoolSize : default 1
+		//MaxPoolSize : default 2
 
+		// 2019-12-30 https://www.npgsql.org/doc/connection-string-parameters.html
 		// 2019-12-30 https://www.npgsql.org/doc/connection-string-parameters.html
 
 		var sb = new StringBuilder ();
@@ -362,6 +428,10 @@ public class ConnectionPropertyBag
 		//database
 		sb.Append ("Database=").Append (Database).Append (';');
 
+		// NOTE:
+		// there are a few auth methods in postgresql
+		// i am simply writing out this method to handle the one i am currently using.
+		// when i begin using other types, i will expand on this.
 		// NOTE:
 		// there are a few auth methods in postgresql
 		// i am simply writing out this method to handle the one i am currently using.
@@ -386,6 +456,8 @@ public class ConnectionPropertyBag
 			sb.Append ("Client Encoding=").Append (Encoding).Append (';');
 		}
 
+		//sb.Append("Pooling=True;");
+		//sb.Append("Pooling=").Append(pooling.ToString().ToLower()).Append(";");
 		//sb.Append("Pooling=True;");
 		//sb.Append("Pooling=").Append(pooling.ToString().ToLower()).Append(";");
 
@@ -423,6 +495,9 @@ public class ConnectionPropertyBag
 		if (IncludeErrorDetail == true) {
 			sb.Append ("Include Error Detail=True;");
 		}
+		if (IncludeErrorDetail == true) {
+			sb.Append ("Include Error Detail=True;");
+		}
 
 		string temp = sb.ToString ();
 
@@ -431,6 +506,8 @@ public class ConnectionPropertyBag
 
 	private string makeMysqlConnectionString () {
 
+		//example:
+		//server=50.56.110.52;port=3306;database=manhattan_ewbtesst;uid=dobiesync;pwd=dobiedoo;
 		//example:
 		//server=50.56.110.52;port=3306;database=manhattan_ewbtesst;uid=dobiesync;pwd=dobiedoo;
 
@@ -464,6 +541,7 @@ public class ConnectionPropertyBag
 		}
 
 		//sb.Append("Pooling=True;");
+		//sb.Append("Pooling=True;");
 
 
 		if (MinPoolSize == null) {
@@ -487,6 +565,4 @@ public class ConnectionPropertyBag
 
 		return sb.ToString ();
 	}
-
-
 }
