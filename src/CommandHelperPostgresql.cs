@@ -244,6 +244,13 @@ public class CommandHelperPostgresql : ICommandHelper, IDisposable {
 		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTimeOffset));
 		command.Parameters[param].Value = value;
 	}
+	public void Append (
+		string param,
+		DateTimeOffset? value
+	) {
+		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.DateTimeOffset));
+		command.Parameters[param].Value = value;
+	}
 
 	/// <summary></summary>
 	/// <remarks>none</remarks>

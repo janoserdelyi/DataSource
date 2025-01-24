@@ -209,6 +209,12 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 	) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
+	public void Append (
+		string param,
+		DateTimeOffset? value
+	) {
+		throw new InvalidOperationException ("Not yet implemented.");
+	}
 
 	public void Append (
 		string param,

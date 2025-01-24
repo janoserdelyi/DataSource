@@ -44,6 +44,7 @@ public interface ICommandHelper : IDisposable {
 	//
 	void Append ( string param, DateTime value );
 	void Append ( string param, DateTimeOffset value );
+	void Append ( string param, DateTimeOffset? value );
 
 	//
 	void Append ( string param, Guid value );

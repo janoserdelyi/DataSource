@@ -206,7 +206,15 @@ public class CommandHelperMssql : ICommandHelper, IDisposable {
 		string param,
 		DateTimeOffset value
 	) {
-		throw new InvalidOperationException ("Not yet implemented.");
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
+		command.Parameters[param].Value = value;
+	}
+	public void Append (
+		string param,
+		DateTimeOffset? value
+	) {
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
+		command.Parameters[param].Value = value;
 	}
 
 	/// <summary></summary>
