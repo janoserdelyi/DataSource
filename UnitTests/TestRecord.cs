@@ -7,6 +7,8 @@ public class TestRecord {
 	public int Id { get; set; }
 	public required string Surrogate { get; set; }
 	public required string Name { get; set; }
+	public required long BigNumber { get; set; }
+	public required short SmallNumber { get; set; }
 	public bool Active { get; set; }
 	public DateTimeOffset CreatedDt { get; set; }
 
@@ -19,6 +21,8 @@ public class TestRecord {
 			Id = cmd.DRH.GetInt ("id"),
 			Surrogate = cmd.DRH.GetString ("surrogate"),
 			Name = cmd.DRH.GetString ("name"),
+			BigNumber = cmd.DRH.GetLong ("big_number"),
+			SmallNumber = cmd.DRH.GetShort ("small_number"),
 			Active = cmd.DRH.GetBool ("active"),
 			CreatedDt = cmd.DRH.GetDateTimeOffset ("created_dt")
 		};

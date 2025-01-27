@@ -1,3 +1,4 @@
+using System.Data.Common;
 using com.janoserdelyi.DataSource;
 
 namespace UnitTests;
@@ -24,6 +25,8 @@ public class Database {
 id int primary key generated always as identity,
 surrogate text not null unique,
 name text not null,
+big_number bigint not null,
+small_number smallint not null,
 active bool not null default true,
 created_dt timestamp with time zone not null default now()
 				);").Go ();
@@ -37,11 +40,45 @@ created_dt timestamp with time zone not null default now()
 id int primary key identity,
 surrogate varchar(20) not null unique,
 name nvarchar(100) not null,
+big_number bigint not null,
+small_number smallint not null,
 active bit not null default 1,
 created_dt datetimeoffset not null default sysdatetimeoffset()
 				);").Go ();
 			}
 		}
+	}
+
+	private TestRecord? insertTestRecord (
+		DatabaseType dbtype
+	) {
+		var values = new TestRecord () {
+			Surrogate = "foo",
+			Name = "foo",
+			BigNumber = (long)1,
+			SmallNumber = (short)1
+		};
+
+		switch (dbtype) {
+			case DatabaseType.Postgresql:
+				return new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("insert into public.test (surrogate, name, big_number, small_number) values (:surrogate, :name, :big_number, :small_number) returning *;")
+					.Append ("surrogate", values.Surrogate)
+					.Append ("name", values.Name)
+					.Append ("big_number", values.BigNumber)
+					.Append ("small_number", values.SmallNumber)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+			case DatabaseType.MSSQL:
+				return new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("insert into dbo.test (surrogate, name, big_number, small_number) output inserted.* values (@surrogate, @name, @big_number, @small_number);")
+					.Append ("surrogate", values.Surrogate)
+					.Append ("name", values.Name)
+					.Append ("big_number", values.BigNumber)
+					.Append ("small_number", values.SmallNumber)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+		}
+
+		return null;
 	}
 
 	[Fact]
@@ -64,24 +101,17 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 
 	[Fact]
 	public void Insert_TestRecord_ExpectInsertion () {
+
 		var cm = ConnectionManager.Instance;
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
-					.Query ("insert into public.test (surrogate, name) values (:surrogate, :name) returning *;")
-					.Append ("surrogate", "foo")
-					.Append ("name", "foo")
-					.Go<TestRecord?> (TestRecord.getTestRecord);
+				var record = insertTestRecord (connection.Value.DatabaseType);
 
 				Assert.NotNull (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				var record = new Connect (MSSQL_CONNECTION_NAME)
-					.Query ("insert into dbo.test (surrogate, name) output inserted.* values (@surrogate, @name);")
-					.Append ("surrogate", "foo")
-					.Append ("name", "foo")
-					.Go<TestRecord?> (TestRecord.getTestRecord);
+				var record = insertTestRecord (connection.Value.DatabaseType);
 
 				Assert.NotNull (record);
 			}
@@ -94,19 +124,100 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				new Connect (POSTGRESQL_CONNECTION_NAME).Query ("insert into public.test (surrogate, name) values ('foo', 'foo');").Go ();
-				var record = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("select * from public.test where name = 'foo';").Go<TestRecord?> (TestRecord.getTestRecord);
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where name = :name;")
+					.Append ("name", "foo")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				new Connect (MSSQL_CONNECTION_NAME).Query ("insert into dbo.test (surrogate, name) values ('foo', 'foo');").Go ();
-				var record = new Connect (MSSQL_CONNECTION_NAME).Query ("select * from dbo.test where name = 'foo';").Go<TestRecord?> (TestRecord.getTestRecord);
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where name = @name;")
+					.Append ("name", "foo")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
 			}
 		}
 	}
 
+	// let's test every data type
+	/*
+	int
+	long
+	short
+	byte
+	bool
+	char
+	TimeSpan
+	string
+	 - plain
+	 - text
+	 - varchar
+	 - nvarchar
+	decimal
+	DateTime
+	DateTimeOffset
+	.. and null versions
+	*/
+	[Fact]
+	public void Append_Int_ExpectSuccess () {
+		var cm = ConnectionManager.Instance;
 
+		int id = 1;
+
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", id)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where id = @id;")
+					.Append ("id", id)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_Long_ExpectSuccess () {
+		var cm = ConnectionManager.Instance;
+
+		long id = 1;
+
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", id)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where id = @id;")
+					.Append ("id", id)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+			}
+		}
+	}
 }
