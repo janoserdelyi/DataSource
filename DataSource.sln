@@ -7,6 +7,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "DataSource", "src\DataSourc
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "test", "test\test.csproj", "{FA467C1D-4FB2-4F11-BF72-71EB278E07DC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UnitTests", "UnitTests\UnitTests.csproj", "{EB681565-E5C5-489B-AED9-3B09A4C32622}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{FA467C1D-4FB2-4F11-BF72-71EB278E07DC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{FA467C1D-4FB2-4F11-BF72-71EB278E07DC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{FA467C1D-4FB2-4F11-BF72-71EB278E07DC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EB681565-E5C5-489B-AED9-3B09A4C32622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EB681565-E5C5-489B-AED9-3B09A4C32622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EB681565-E5C5-489B-AED9-3B09A4C32622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EB681565-E5C5-489B-AED9-3B09A4C32622}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

@@ -220,6 +220,9 @@ public class ConnectionManager {
 			if (connectionNode.SelectSingleNode ("applicationname") != null) {
 				connectionPropertyBag.ApplicationName = connectionNode.SelectSingleNode ("applicationname")?.InnerText;
 			}
+			if (connectionNode.SelectSingleNode ("encrypt") != null) {
+				connectionPropertyBag.Encrypt = Boolean.Parse (connectionNode.SelectSingleNode ("encrypt")?.InnerText!);
+			}
 
 			// i'm not changing the value if it exists, so i'm just passing in a Func that gets me the value i want in the first place
 			// instance.connections.AddOrUpdate(connectionPropertyBag.Name, connectionPropertyBag, (key, oldValue) => connectionPropertyBag);

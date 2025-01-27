@@ -87,6 +87,13 @@ public class Connect {
 		string value
 	) {
 		ArgumentNullException.ThrowIfNull (this.command);
+
+		// for mssql do i want to assume nvarchar for this?
+		if (this.connection.DatabaseType == DatabaseType.MSSQL) {
+			this.command.CH.AppendNvarchar (name, value);
+			return this;
+		}
+
 		this.command.CH.Append (name, value);
 		return this;
 	}

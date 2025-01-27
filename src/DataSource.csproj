@@ -7,7 +7,7 @@
 		<Company>Janos Erdelyi</Company>
 		<Product>DataSource</Product>
 		<Description>Ancient but helpful shim layer for managing database access. Primarily PostgreSQL, but also works for MSSQL and MySQL</Description>
-		<Version>1.5.2</Version>
+		<Version>1.6.0</Version>
 		<AssemblyName>DataSource</AssemblyName>
 		<!-- for packaging -->
 		<EnablePackageValidation>true</EnablePackageValidation>
