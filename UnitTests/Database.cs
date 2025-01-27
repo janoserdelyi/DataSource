@@ -189,6 +189,8 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 					.Query ("select * from dbo.test where id = @id;")
 					.Append ("id", id)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
 			}
 		}
 	}
@@ -197,15 +199,15 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 	public void Append_Long_ExpectSuccess () {
 		var cm = ConnectionManager.Instance;
 
-		long id = 1;
+		long bignum = 1;
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
 				insertTestRecord (connection.Value.DatabaseType);
 
 				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
-					.Query ("select * from public.test where id = :id;")
-					.Append ("id", id)
+					.Query ("select * from public.test where big_number = :big_number;")
+					.Append ("big_number", bignum)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
@@ -214,9 +216,41 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 				insertTestRecord (connection.Value.DatabaseType);
 
 				var record = new Connect (MSSQL_CONNECTION_NAME)
-					.Query ("select * from dbo.test where id = @id;")
-					.Append ("id", id)
+					.Query ("select * from dbo.test where big_number = @big_number;")
+					.Append ("big_number", bignum)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_Short_ExpectSuccess () {
+		var cm = ConnectionManager.Instance;
+
+		short smallnum = 1;
+
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where small_number = :small_number;")
+					.Append ("small_number", smallnum)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				insertTestRecord (connection.Value.DatabaseType);
+
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where small_number = @small_number;")
+					.Append ("small_number", smallnum)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
 			}
 		}
 	}
