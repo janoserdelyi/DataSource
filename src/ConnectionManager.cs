@@ -5,7 +5,8 @@ using System.IO;
 
 namespace com.janoserdelyi.DataSource;
 
-public class ConnectionManager {
+public class ConnectionManager
+{
 
 	private ConnectionManager () {
 		connections = new ConcurrentDictionary<string, ConnectionPropertyBag> ();
@@ -222,6 +223,9 @@ public class ConnectionManager {
 			}
 			if (connectionNode.SelectSingleNode ("encrypt") != null) {
 				connectionPropertyBag.Encrypt = Boolean.Parse (connectionNode.SelectSingleNode ("encrypt")?.InnerText!);
+			}
+			if (connectionNode.SelectSingleNode ("integratedsecurity") != null) {
+				connectionPropertyBag.IntegratedSecurity = connectionNode.SelectSingleNode ("integratedsecurity")?.InnerText!;
 			}
 
 			// i'm not changing the value if it exists, so i'm just passing in a Func that gets me the value i want in the first place

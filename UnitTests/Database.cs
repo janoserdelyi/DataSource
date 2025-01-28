@@ -3,19 +3,13 @@ using com.janoserdelyi.DataSource;
 
 namespace UnitTests;
 
-public class Database {
+// https://xunit.net/docs/shared-context
+public class DatabaseFixture : IDisposable
+{
+	public DatabaseFixture () {
+		this.ConnectionManager = ConnectionManager.Instance;
 
-	const string POSTGRESQL_CONNECTION_NAME = "TestPostgresql";
-	const string MSSQL_CONNECTION_NAME = "TestMssql";
-
-	static Database () {
-
-	}
-
-	public Database () {
-		var cm = ConnectionManager.Instance;
-
-		foreach (var connection in cm.Connections) {
+		foreach (var connection in this.ConnectionManager.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
 				// establish a table to test against
 				new Connect (POSTGRESQL_CONNECTION_NAME).Query ("drop table if exists public.test;").Go ();
@@ -45,6 +39,21 @@ small_number smallint not null,
 active bit not null default 1,
 created_dt datetimeoffset not null default sysdatetimeoffset()
 				);").Go ();
+			}
+
+			insertTestRecord (connection.Value.DatabaseType);
+		}
+	}
+
+	public void Dispose () {
+		foreach (var connection in this.ConnectionManager.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				// establish a table to test against
+				new Connect (POSTGRESQL_CONNECTION_NAME).Query ("drop table if exists public.test;").Go ();
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				// establish a table to test against
+				new Connect (MSSQL_CONNECTION_NAME).Query ("drop table if exists dbo.test;").Go ();
 			}
 		}
 	}
@@ -81,70 +90,60 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 		return null;
 	}
 
+	public ConnectionManager ConnectionManager { get; set; }
+	public readonly string POSTGRESQL_CONNECTION_NAME = "TestPostgresql";
+	public readonly string MSSQL_CONNECTION_NAME = "TestMssql";
+}
+
+public class Database : IClassFixture<DatabaseFixture>
+{
+
+	readonly DatabaseFixture fixture;
+	readonly ConnectionManager cm;
+	readonly string POSTGRESQL_CONNECTION_NAME;
+	readonly string MSSQL_CONNECTION_NAME;
+
+	public Database (
+		DatabaseFixture fixture
+	) {
+		this.fixture = fixture;
+
+		cm = fixture.ConnectionManager;
+		POSTGRESQL_CONNECTION_NAME = this.fixture.POSTGRESQL_CONNECTION_NAME;
+		MSSQL_CONNECTION_NAME = this.fixture.MSSQL_CONNECTION_NAME;
+	}
+
 	[Fact]
 	public void Get_TestRecord_ExpectNone () {
-		var cm = ConnectionManager.Instance;
-
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				var record = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("select * from public.test;").Go<TestRecord?> (TestRecord.getTestRecord);
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("select * from public.test where name = 'bar';").Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.Null (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				var record = new Connect (MSSQL_CONNECTION_NAME).Query ("select * from dbo.test;").Go<TestRecord?> (TestRecord.getTestRecord);
+				var record = new Connect (MSSQL_CONNECTION_NAME).Query ("select * from dbo.test where name = 'bar';").Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.Null (record);
 			}
 		}
 	}
 
-	[Fact]
-	public void Insert_TestRecord_ExpectInsertion () {
+	// [Fact]
+	// public void Insert_TestRecord_ExpectInsertion () {
+	// 	foreach (var connection in cm.Connections) {
+	// 		if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+	// 			var record = insertTestRecord (connection.Value.DatabaseType);
 
-		var cm = ConnectionManager.Instance;
+	// 			Assert.NotNull (record);
+	// 		}
+	// 		if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+	// 			var record = insertTestRecord (connection.Value.DatabaseType);
 
-		foreach (var connection in cm.Connections) {
-			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				var record = insertTestRecord (connection.Value.DatabaseType);
-
-				Assert.NotNull (record);
-			}
-			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				var record = insertTestRecord (connection.Value.DatabaseType);
-
-				Assert.NotNull (record);
-			}
-		}
-	}
-
-	[Fact]
-	public void Get_TestRecord_ExpectOne () {
-		var cm = ConnectionManager.Instance;
-
-		foreach (var connection in cm.Connections) {
-			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				insertTestRecord (connection.Value.DatabaseType);
-
-				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
-					.Query ("select * from public.test where name = :name;")
-					.Append ("name", "foo")
-					.Go<TestRecord?> (TestRecord.getTestRecord);
-
-				Assert.NotNull (record);
-			}
-			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				insertTestRecord (connection.Value.DatabaseType);
-
-				var record = new Connect (MSSQL_CONNECTION_NAME)
-					.Query ("select * from dbo.test where name = @name;")
-					.Append ("name", "foo")
-					.Go<TestRecord?> (TestRecord.getTestRecord);
-
-				Assert.NotNull (record);
-			}
-		}
-	}
+	// 			Assert.NotNull (record);
+	// 		}
+	// 	}
+	// }
 
 	// let's test every data type
 	/*
@@ -167,14 +166,11 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 	*/
 	[Fact]
 	public void Append_Int_ExpectSuccess () {
-		var cm = ConnectionManager.Instance;
 
 		int id = 1;
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
 					.Query ("select * from public.test where id = :id;")
 					.Append ("id", id)
@@ -183,8 +179,6 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 				Assert.NotNull (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where id = @id;")
 					.Append ("id", id)
@@ -197,14 +191,11 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 
 	[Fact]
 	public void Append_Long_ExpectSuccess () {
-		var cm = ConnectionManager.Instance;
 
 		long bignum = 1;
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
 					.Query ("select * from public.test where big_number = :big_number;")
 					.Append ("big_number", bignum)
@@ -213,8 +204,6 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 				Assert.NotNull (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where big_number = @big_number;")
 					.Append ("big_number", bignum)
@@ -227,14 +216,11 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 
 	[Fact]
 	public void Append_Short_ExpectSuccess () {
-		var cm = ConnectionManager.Instance;
 
 		short smallnum = 1;
 
 		foreach (var connection in cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
 					.Query ("select * from public.test where small_number = :small_number;")
 					.Append ("small_number", smallnum)
@@ -243,11 +229,58 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 				Assert.NotNull (record);
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				insertTestRecord (connection.Value.DatabaseType);
-
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where small_number = @small_number;")
 					.Append ("small_number", smallnum)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+		}
+	}
+
+	// byte
+
+	[Fact]
+	public void Append_Bool_ExpectSuccess () {
+
+		bool active = true;
+
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where active = :active;")
+					.Append ("active", active)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where active = @active;")
+					.Append ("active", active)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_PlainString_ExpectSuccess () {
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var record = new Connect (POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where name = :name;")
+					.Append ("name", "foo")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where name = @name;")
+					.Append ("name", "foo")
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
