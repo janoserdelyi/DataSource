@@ -1,4 +1,4 @@
-using Npgsql;
+﻿using Npgsql;
 using NpgsqlTypes;
 
 namespace com.janoserdelyi.DataSource;
@@ -6,7 +6,8 @@ namespace com.janoserdelyi.DataSource;
 /// <summary>
 /// Summary description for CommandHelper.
 /// </summary>
-public class CommandHelperPostgresql : ICommandHelper, IDisposable {
+public class CommandHelperPostgresql : ICommandHelper, IDisposable
+{
 	public CommandHelperPostgresql () {
 		command = new NpgsqlCommand ();
 	}
@@ -85,6 +86,14 @@ public class CommandHelperPostgresql : ICommandHelper, IDisposable {
 		byte value
 	) {
 		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, System.Data.DbType.Byte));
+		command.Parameters[param].Value = value;
+	}
+
+	public void Append (
+		string param,
+		byte[] value
+	) {
+		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, NpgsqlDbType.Bytea));
 		command.Parameters[param].Value = value;
 	}
 

@@ -1,6 +1,7 @@
 namespace com.janoserdelyi.DataSource;
 
-public class Connect {
+public class Connect
+{
 	// i wonder if i could produce structures to allow for syntax like :
 	// insert -
 	// new Connect("connection name").Query("insert into...").Append("param1Name", param1Value).Append("param2Name", param2Value).Go();
@@ -193,6 +194,15 @@ public class Connect {
 	public Connect Append (
 		string name,
 		byte value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		byte[] value
 	) {
 		ArgumentNullException.ThrowIfNull (this.command);
 		this.command.CH.Append (name, value);

@@ -1,9 +1,10 @@
-using System.Text;
+﻿using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource;
 
-public class CommandHelperMssql : ICommandHelper, IDisposable {
+public class CommandHelperMssql : ICommandHelper, IDisposable
+{
 
 	public CommandHelperMssql () {
 		command = new SqlCommand ();
@@ -69,9 +70,38 @@ public class CommandHelperMssql : ICommandHelper, IDisposable {
 		string param,
 		byte value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.TinyInt));
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
 		command.Parameters[param].Value = value;
 	}
+	public void Append (
+		string param,
+		byte? value
+	) {
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
+		if (value.HasValue) {
+			command.Parameters[param].Value = value.Value;
+		} else {
+			command.Parameters[param].Value = DBNull.Value;
+		}
+	}
+
+	public void Append (
+		string param,
+		byte[] value
+	) {
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.VarBinary));
+		command.Parameters[param].Value = value;
+	}
+	// public void Append (
+	// 	string param,
+	// 	byte[]? value
+	// ) {
+	// 	command.Parameters.Add (new SqlParameter (param, SqlDbType.TinyInt));
+	// 	if (value == null)
+	// 		command.Parameters[param].Value = DBNull.Value;
+	// 	else
+	// 		command.Parameters[param].Value = value;
+	// }
 
 	/// <summary></summary>
 	/// <remarks>none</remarks>
@@ -231,34 +261,34 @@ public class CommandHelperMssql : ICommandHelper, IDisposable {
 	}
 
 
-	public void Append ( string param, int[] value ) {
+	public void Append (string param, int[] value) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, long[] value ) {
+	public void Append (string param, long[] value) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, double[] value ) {
+	public void Append (string param, double[] value) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, DateTime[] value ) {
+	public void Append (string param, DateTime[] value) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, string[] value ) {
+	public void Append (string param, string[] value) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, int[,] value ) {
+	public void Append (string param, int[,] value) {
 		throw new NotImplementedException ();
 	}
 
-	public void AppendNumeric ( string param, decimal value ) {
+	public void AppendNumeric (string param, decimal value) {
 		throw new NotImplementedException ();
 	}
 
 	// 2013-01-29
-	public void AppendInet ( string param, string value, int netmask = 32 ) {
+	public void AppendInet (string param, string value, int netmask = 32) {
 		throw new NotImplementedException ();
 	}
-	public void Append ( string param, System.Net.IPAddress value, int netmask = 32 ) {
+	public void Append (string param, System.Net.IPAddress value, int netmask = 32) {
 		AppendInet (param, value.ToString ());
 	}
 
@@ -342,22 +372,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable {
 		short? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
-		if (value.HasValue)
-			command.Parameters[param].Value = value.Value;
-		else
-			command.Parameters[param].Value = DBNull.Value;
-	}
-
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
-	public void Append (
-		string param,
-		byte? value
-	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.TinyInt));
 		if (value.HasValue)
 			command.Parameters[param].Value = value.Value;
 		else
@@ -474,7 +488,7 @@ public class CommandHelperMssql : ICommandHelper, IDisposable {
 		command.Parameters.Add (p);
 	}
 
-	private string Join ( char[] ary ) {
+	private string Join (char[] ary) {
 		StringBuilder sb = new StringBuilder (8);
 		for (int i = 0; i < ary.Length; i++) {
 			sb.Append (ary[i]);

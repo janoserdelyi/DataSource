@@ -1,8 +1,9 @@
-using Npgsql;
+﻿using Npgsql;
 
 namespace com.janoserdelyi.DataSource;
 
-public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
+public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable
+{
 	public DataReaderHelperPostgresql () {
 
 	}
@@ -16,7 +17,7 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		dr?.Close ();
 	}
 
-	public bool HasField ( string column ) {
+	public bool HasField (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		// dr.GetOrdinal no longer returns a -1 when the field name is missing. ppbbtthh
@@ -28,13 +29,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return false;
 	}
 
-	public string GetString ( string column ) {
+	public string GetString (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetString (ord);
 	}
-	public string? GetString ( string column, bool isNullable ) {
+	public string? GetString (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -66,29 +67,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 	//	return System.Numerics.BigInteger.Parse (dr.GetString (dr.GetOrdinal (column)));
 	//}
 
-	public long GetLong ( string column ) {
+	public long GetLong (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetInt64 (ord);
 	}
-	public long? GetLong ( string column, bool isNullable ) {
-		ArgumentNullException.ThrowIfNull (dr);
-
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
-			return null;
-		}
-		return dr.GetInt64 (ord);
-	}
-
-	public long GetInt64 ( string column ) {
-		ArgumentNullException.ThrowIfNull (dr);
-
-		var ord = dr.GetOrdinal (column);
-		return dr.GetInt64 (ord);
-	}
-	public long? GetInt64 ( string column, bool isNullable ) {
+	public long? GetLong (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -98,13 +83,29 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetInt64 (ord);
 	}
 
-	public double GetDouble ( string column ) {
+	public long GetInt64 (string column) {
+		ArgumentNullException.ThrowIfNull (dr);
+
+		var ord = dr.GetOrdinal (column);
+		return dr.GetInt64 (ord);
+	}
+	public long? GetInt64 (string column, bool isNullable) {
+		ArgumentNullException.ThrowIfNull (dr);
+
+		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
+		return dr.GetInt64 (ord);
+	}
+
+	public double GetDouble (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetDouble (ord);
 	}
-	public double? GetDouble ( string column, bool isNullable ) {
+	public double? GetDouble (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -114,13 +115,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetDouble (ord);
 	}
 
-	public int GetInt ( string column ) {
+	public int GetInt (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetInt32 (ord);
 	}
-	public int? GetInt ( string column, bool isNullable ) {
+	public int? GetInt (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -130,13 +131,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetInt32 (ord);
 	}
 
-	public short GetShort ( string column ) {
+	public short GetShort (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetInt16 (ord);
 	}
-	public short? GetShort ( string column, bool isNullable ) {
+	public short? GetShort (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -146,13 +147,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetInt16 (ord);
 	}
 
-	public byte GetByte ( string column ) {
+	public byte GetByte (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetByte (ord);
 	}
-	public byte? GetByte ( string column, bool isNullable ) {
+	public byte? GetByte (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -162,13 +163,41 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetByte (ord);
 	}
 
-	public bool GetBool ( string column ) {
+	public byte[] GetByteArray (
+		string column,
+		int length
+	) {
+		ArgumentNullException.ThrowIfNull (dr);
+
+		byte[] buf = new byte[length];
+
+		var ord = dr.GetOrdinal (column);
+		dr.GetBytes (ord, 0, buf, 0, length);
+		return buf;
+	}
+	public byte[]? GetByteArray (
+		string column,
+		int length,
+		bool isNullable
+	) {
+		ArgumentNullException.ThrowIfNull (dr);
+
+		var ord = dr.GetOrdinal (column);
+		if (dr.IsDBNull (ord)) {
+			return null;
+		}
+		byte[] buf = new byte[length];
+		dr.GetBytes (ord, 0, buf, 0, length);
+		return buf;
+	}
+
+	public bool GetBool (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetBoolean (ord);
 	}
-	public bool? GetBool ( string column, bool isNullable ) {
+	public bool? GetBool (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -178,7 +207,7 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetBoolean (ord);
 	}
 
-	public DateTime GetDateTime ( string column ) {
+	public DateTime GetDateTime (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		// breaking change with npgsql 6.x - returning datetimekind UTC where i was expecting local previously
@@ -194,7 +223,7 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 
 		return ret;
 	}
-	public DateTime? GetDateTime ( string column, bool isNullable ) {
+	public DateTime? GetDateTime (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		// breaking change with npgsql 6.x - returning datetimekind UTC where i was expecting local previously
@@ -213,14 +242,14 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return ret;
 	}
 
-	public DateTimeOffset GetDateTimeOffset ( string column ) {
+	public DateTimeOffset GetDateTimeOffset (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 
 		return dr.GetDateTime (ord);
 	}
-	public DateTimeOffset? GetDateTimeOffset ( string column, bool isNullable ) {
+	public DateTimeOffset? GetDateTimeOffset (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -230,13 +259,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetDateTime (ord);
 	}
 
-	public TimeSpan GetTimeSpan ( string column ) {
+	public TimeSpan GetTimeSpan (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetTimeSpan (ord);
 	}
-	public TimeSpan? GetTimeSpan ( string column, bool isNullable ) {
+	public TimeSpan? GetTimeSpan (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -246,13 +275,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetTimeSpan (ord);
 	}
 
-	public decimal GetDecimal ( string column ) {
+	public decimal GetDecimal (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetDecimal (ord);
 	}
-	public decimal? GetDecimal ( string column, bool isNullable ) {
+	public decimal? GetDecimal (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -262,13 +291,13 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetDecimal (ord);
 	}
 
-	public Guid GetGuid ( string column ) {
+	public Guid GetGuid (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
 		return dr.GetGuid (ord);
 	}
-	public Guid? GetGuid ( string column, bool isNullable ) {
+	public Guid? GetGuid (string column, bool isNullable) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		var ord = dr.GetOrdinal (column);
@@ -279,25 +308,25 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 	}
 
 	//added by harv
-	public int[]? GetIntArray ( string column ) {
+	public int[]? GetIntArray (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		return (int[])dr.GetValue (dr.GetOrdinal (column));
 	}
 
-	public int[,]? GetIntArray2D ( string column ) {
+	public int[,]? GetIntArray2D (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		return (int[,])dr.GetValue (dr.GetOrdinal (column));
 	}
 
-	public long[]? GetLongArray ( string column ) {
+	public long[]? GetLongArray (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		return (long[])dr.GetValue (dr.GetOrdinal (column));
 	}
 
-	public double[]? GetDoubleArray ( string column ) {
+	public double[]? GetDoubleArray (string column) {
 		ArgumentNullException.ThrowIfNull (dr);
 
 		return (double[])dr.GetValue (dr.GetOrdinal (column));
@@ -362,7 +391,7 @@ public class DataReaderHelperPostgresql : IDataReaderHelper, IDisposable {
 		return dr.GetValue (ord).ToString ();
 	}
 
-	// 2016-06-28 
+	// 2016-06-28
 	public System.Net.IPAddress GetIpAddress (
 		string column
 	) {

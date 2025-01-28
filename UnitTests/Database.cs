@@ -1,4 +1,5 @@
 using System.Data.Common;
+using System.Text;
 using com.janoserdelyi.DataSource;
 
 namespace UnitTests;
@@ -21,6 +22,8 @@ surrogate text not null unique,
 name text not null,
 big_number bigint not null,
 small_number smallint not null,
+single_byte binary not null,
+bytes bytea not null,
 active bool not null default true,
 created_dt timestamp with time zone not null default now()
 				);").Go ();
@@ -36,6 +39,8 @@ surrogate varchar(20) not null unique,
 name nvarchar(100) not null,
 big_number bigint not null,
 small_number smallint not null,
+single_byte binary(1) not null,
+bytes varbinary(1024) not null,
 active bit not null default 1,
 created_dt datetimeoffset not null default sysdatetimeoffset()
 				);").Go ();
@@ -65,25 +70,31 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 			Surrogate = "foo",
 			Name = "foo",
 			BigNumber = (long)1,
-			SmallNumber = (short)1
+			SmallNumber = (short)1,
+			SingleByte = (byte)0x20, // empty
+			Bytes = Encoding.ASCII.GetBytes (new string (' ', 1024)) //empty
 		};
 
 		switch (dbtype) {
 			case DatabaseType.Postgresql:
 				return new Connect (POSTGRESQL_CONNECTION_NAME)
-					.Query ("insert into public.test (surrogate, name, big_number, small_number) values (:surrogate, :name, :big_number, :small_number) returning *;")
+					.Query ("insert into public.test (surrogate, name, big_number, small_number, single_byte, bytes) values (:surrogate, :name, :big_number, :small_number, :single_byte, :bytes) returning *;")
 					.Append ("surrogate", values.Surrogate)
 					.Append ("name", values.Name)
 					.Append ("big_number", values.BigNumber)
 					.Append ("small_number", values.SmallNumber)
+					.Append ("single_byte", values.SingleByte)
+					.Append ("bytes", values.Bytes)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 			case DatabaseType.MSSQL:
 				return new Connect (MSSQL_CONNECTION_NAME)
-					.Query ("insert into dbo.test (surrogate, name, big_number, small_number) output inserted.* values (@surrogate, @name, @big_number, @small_number);")
+					.Query ("insert into dbo.test (surrogate, name, big_number, small_number, single_byte, bytes) output inserted.* values (@surrogate, @name, @big_number, @small_number, @single_byte, @bytes);")
 					.Append ("surrogate", values.Surrogate)
 					.Append ("name", values.Name)
 					.Append ("big_number", values.BigNumber)
 					.Append ("small_number", values.SmallNumber)
+					.Append ("single_byte", values.SingleByte)
+					.Append ("bytes", values.Bytes)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 		}
 

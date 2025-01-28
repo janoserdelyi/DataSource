@@ -1,11 +1,12 @@
-using MySqlConnector;
+﻿using MySqlConnector;
 
 namespace com.janoserdelyi.DataSource;
 
 /// <summary>
 /// Summary description for CommandHelper.
 /// </summary>
-public class CommandHelperMysql : ICommandHelper, IDisposable {
+public class CommandHelperMysql : ICommandHelper, IDisposable
+{
 	///<summary>Constructor for CommandHelper</summary>
 	public CommandHelperMysql () {
 		command = new MySqlCommand ();
@@ -85,6 +86,14 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		byte value
 	) {
 		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Byte));
+		command.Parameters[param].Value = value;
+	}
+
+	public void Append (
+		string param,
+		byte[] value
+	) {
+		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, SqlDbType.VarBinary));
 		command.Parameters[param].Value = value;
 	}
 
@@ -225,31 +234,31 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 	}
 
 	//added by harv
-	public void Append ( string param, int[] value ) {
+	public void Append (string param, int[] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	public void Append ( string param, long[] value ) {
+	public void Append (string param, long[] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	public void Append ( string param, double[] value ) {
+	public void Append (string param, double[] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	public void Append ( string param, DateTime[] value ) {
+	public void Append (string param, DateTime[] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	public void Append ( string param, string[] value ) {
+	public void Append (string param, string[] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
-	public void Append ( string param, int[,] value ) {
+	public void Append (string param, int[,] value) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
 
 	// 2013-01-29
-	public void AppendInet ( string param, string value, int netmask = 32 ) {
+	public void AppendInet (string param, string value, int netmask = 32) {
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
 
-	public void Append ( string param, System.Net.IPAddress value, int netmask = 32 ) {
+	public void Append (string param, System.Net.IPAddress value, int netmask = 32) {
 		AppendInet (param, value.ToString ());
 	}
 
@@ -317,7 +326,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, short? value ) {
+	public void Append (string param, short? value) {
 		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int16, 4));
 		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
@@ -326,7 +335,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, byte? value ) {
+	public void Append (string param, byte? value) {
 		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Byte));
 		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
@@ -335,7 +344,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, bool? value ) {
+	public void Append (string param, bool? value) {
 		/*
 		command.Parameters.Add(new MySqlParameter(param, System.Data.DbType.Boolean, 1));
 		if (value.HasValue){
@@ -347,7 +356,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		throw new InvalidOperationException ("Mysql does not have a boolean. Please abuse some other data type");
 	}
 
-	public void Append ( string param, char? value ) {
+	public void Append (string param, char? value) {
 		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, 1));
 		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
@@ -368,7 +377,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, System.Decimal? value, bool isMoney ) {
+	public void Append (string param, System.Decimal? value, bool isMoney) {
 		if (isMoney) { //TODO:investigate how this impacts postrgres. this is a carryover from MSSQL
 			command.Parameters.Add (new MySqlParameter (param, System.Data.SqlDbType.Money));
 		} else {
@@ -381,7 +390,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, DateTime? value ) {
+	public void Append (string param, DateTime? value) {
 		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
 		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
@@ -390,7 +399,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable {
 		}
 	}
 
-	public void Append ( string param, Guid? value ) {
+	public void Append (string param, Guid? value) {
 		throw new Exception ("Error, Not yet implemented.");
 		/*
 		command.Parameters.Add(new MySqlParameter(param, SqlDbType.UniqueIdentifier));
