@@ -12,6 +12,8 @@ public class TestRecord
 	public required short SmallNumber { get; set; }
 	public required byte SingleByte { get; set; }
 	public required byte[] Bytes { get; set; }
+	public required string Charv { get; set; } // varchar - not testing in postgresql
+	public required string Charnv { get; set; } // nvarchar - not testing in postgresql
 	public bool Active { get; set; }
 	public DateTimeOffset CreatedDt { get; set; }
 
@@ -28,6 +30,8 @@ public class TestRecord
 			SmallNumber = cmd.DRH.GetShort ("small_number"),
 			SingleByte = cmd.DRH.GetByte ("single_byte"),
 			Bytes = cmd.DRH.GetByteArray ("bytes", 1024),
+			Charv = cmd.DRH.GetString ("charv"),
+			Charnv = cmd.DRH.GetString ("charnv"),
 			Active = cmd.DRH.GetBool ("active"),
 			CreatedDt = cmd.DRH.GetDateTimeOffset ("created_dt")
 		};

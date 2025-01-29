@@ -99,6 +99,23 @@ public class Connect
 		return this;
 	}
 
+	[Obsolete ("text datatype is deprecated as of sql server 2016")]
+	public Connect AppendText (
+		string name,
+		string value
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+
+		// for mssql do i want to assume nvarchar for this?
+		if (this.connection.DatabaseType == DatabaseType.MSSQL) {
+			this.command.CH.AppendText (name, value);
+			return this;
+		}
+
+		this.command.CH.Append (name, value);
+		return this;
+	}
+
 	// for mssql
 	public Connect Append (
 		string name,

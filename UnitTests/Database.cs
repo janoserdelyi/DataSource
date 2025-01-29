@@ -24,6 +24,8 @@ big_number bigint not null,
 small_number smallint not null,
 single_byte binary not null,
 bytes bytea not null,
+charv text null,
+charnv text null,
 active bool not null default true,
 created_dt timestamp with time zone not null default now()
 				);").Go ();
@@ -41,6 +43,8 @@ big_number bigint not null,
 small_number smallint not null,
 single_byte binary(1) not null,
 bytes varbinary(1024) not null,
+charv varchar(25) not null,
+charnv nvarchar(25) not null,
 active bit not null default 1,
 created_dt datetimeoffset not null default sysdatetimeoffset()
 				);").Go ();
@@ -72,13 +76,31 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 			BigNumber = (long)1,
 			SmallNumber = (short)1,
 			SingleByte = (byte)0x20, // empty char
-			Bytes = Encoding.ASCII.GetBytes (new string (' ', 1024)) //empty chars
+			Bytes = Encoding.ASCII.GetBytes (new string (' ', 1024)), //empty chars
+			Charv = "varchar",
+			Charnv = "nvarchar"
 		};
 
 		switch (dbtype) {
 			case DatabaseType.Postgresql:
 				return new Connect (POSTGRESQL_CONNECTION_NAME)
-					.Query ("insert into public.test (surrogate, name, big_number, small_number, single_byte, bytes) values (:surrogate, :name, :big_number, :small_number, :single_byte, :bytes) returning *;")
+					.Query (@"insert into public.test (
+	surrogate,
+	name,
+	big_number,
+	small_number,
+	single_byte,
+	bytes
+)
+values (
+	:surrogate,
+	:name,
+	:big_number,
+	:small_number,
+	:single_byte,
+	:bytes
+)
+returning *;")
 					.Append ("surrogate", values.Surrogate)
 					.Append ("name", values.Name)
 					.Append ("big_number", values.BigNumber)
@@ -88,13 +110,35 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 			case DatabaseType.MSSQL:
 				return new Connect (MSSQL_CONNECTION_NAME)
-					.Query ("insert into dbo.test (surrogate, name, big_number, small_number, single_byte, bytes) output inserted.* values (@surrogate, @name, @big_number, @small_number, @single_byte, @bytes);")
+					.Query (@"insert into dbo.test (
+	surrogate,
+	name,
+	big_number,
+	small_number,
+	single_byte,
+	bytes,
+	charv,
+	charnv
+)
+output inserted.*
+values (
+	@surrogate,
+	@name,
+	@big_number,
+	@small_number,
+	@single_byte,
+	@bytes,
+	@charv,
+	@charnv
+);")
 					.Append ("surrogate", values.Surrogate)
 					.Append ("name", values.Name)
 					.Append ("big_number", values.BigNumber)
 					.Append ("small_number", values.SmallNumber)
 					.Append ("single_byte", values.SingleByte)
 					.Append ("bytes", values.Bytes)
+					.AppendVarchar ("charv", values.Charv)
+					.AppendNvarchar ("charnv", values.Charnv)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 		}
 
@@ -292,6 +336,34 @@ public class Database : IClassFixture<DatabaseFixture>
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where name = @name;")
 					.Append ("name", "foo")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_Varchar_ExpectSuccess () {
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where charv = @charv;")
+					.AppendVarchar ("charv", "varchar")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_Nvarchar_ExpectSuccess () {
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var record = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select * from dbo.test where charnv = @charnv;")
+					.AppendNvarchar ("charnv", "nvarchar")
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
