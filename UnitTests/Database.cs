@@ -71,8 +71,8 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 			Name = "foo",
 			BigNumber = (long)1,
 			SmallNumber = (short)1,
-			SingleByte = (byte)0x20, // empty
-			Bytes = Encoding.ASCII.GetBytes (new string (' ', 1024)) //empty
+			SingleByte = (byte)0x20, // empty char
+			Bytes = Encoding.ASCII.GetBytes (new string (' ', 1024)) //empty chars
 		};
 
 		switch (dbtype) {

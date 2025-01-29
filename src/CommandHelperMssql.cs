@@ -71,7 +71,7 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		byte value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
-		command.Parameters[param].Value = value;
+		command.Parameters[param].Value = (byte[])[value];
 	}
 	public void Append (
 		string param,
@@ -79,7 +79,7 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			command.Parameters[param].Value = (byte[])[value.Value];
 		} else {
 			command.Parameters[param].Value = DBNull.Value;
 		}

@@ -94,6 +94,16 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 
 		var len = dr.GetBytes (ord, 0, null, 0, 1);
 
+		if (len < 1) {
+			Exception? oops = null;
+			throw new ArgumentOutOfRangeException ("no byte returned", oops);
+		}
+
+		if (len > 1) {
+			Exception? oops = null;
+			throw new ArgumentOutOfRangeException ($"only one byte was expected, but {len} are present", oops);
+		}
+
 		// this appears to be potentially returning more than one byte. so get a byte array and return the first element. using dr.GetByte(ord)
 
 		byte[] buf = new byte[1];
