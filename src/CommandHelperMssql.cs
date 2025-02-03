@@ -469,6 +469,17 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			command.Parameters[param].Value = DBNull.Value;
 	}
 
+	public void Append (
+		string param,
+		DataTable value,
+		string udtTypeName
+	) {
+		command.Parameters.Add (new SqlParameter (param, SqlDbType.Structured));
+		command.Parameters[param].Value = value;
+		// command.Parameters[param].UdtTypeName = udtTypeName;
+		command.Parameters[param].TypeName = udtTypeName;
+	}
+
 	public void Return (
 		string param,
 		SqlDbType dbtype

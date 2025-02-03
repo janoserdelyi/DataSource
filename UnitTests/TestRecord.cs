@@ -38,8 +38,8 @@ public class TestRecord
 	}
 
 	internal static TestRecord? getTestRecord (
-			Command cmd
-		) {
+		Command cmd
+	) {
 		using (var dr = cmd.ExecuteReader ()) {
 			if (dr.Read ()) {
 				return loadObj (cmd);
@@ -49,8 +49,8 @@ public class TestRecord
 	}
 
 	internal static IList<TestRecord> getTestRecords (
-			Command cmd
-		) {
+		Command cmd
+	) {
 		using (var dr = cmd.ExecuteReader ()) {
 			var rets = new List<TestRecord> ();
 			while (dr.Read ()) {

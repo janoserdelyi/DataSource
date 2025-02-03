@@ -406,6 +406,14 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 		*/
 	}
+
+	public void Append (
+		string param,
+		DataTable value,
+		string udtTypeName
+	) {
+		throw new NotImplementedException ();
+	}
 	#endregion
 
 

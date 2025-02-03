@@ -99,6 +99,22 @@ public class Connect
 		return this;
 	}
 
+	// public Connect Append (
+	// 	string name,
+	// 	string? value
+	// ) {
+	// 	ArgumentNullException.ThrowIfNull (this.command);
+
+	// 	// for mssql do i want to assume nvarchar for this?
+	// 	if (this.connection.DatabaseType == DatabaseType.MSSQL) {
+	// 		this.command.CH.AppendNvarchar (name, value);
+	// 		return this;
+	// 	}
+
+	// 	this.command.CH.Append (name, value);
+	// 	return this;
+	// }
+
 	[Obsolete ("text datatype is deprecated as of sql server 2016")]
 	public Connect AppendText (
 		string name,
@@ -422,6 +438,16 @@ public class Connect
 	) {
 		ArgumentNullException.ThrowIfNull (this.command);
 		this.command.CH.Append (name, value, size);
+		return this;
+	}
+
+	public Connect Append (
+		string name,
+		DataTable value,
+		string udtTypeName
+	) {
+		ArgumentNullException.ThrowIfNull (this.command);
+		this.command.CH.Append (name, value, udtTypeName);
 		return this;
 	}
 

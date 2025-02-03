@@ -577,6 +577,15 @@ public class CommandHelperPostgresql : ICommandHelper, IDisposable
 		*/
 	}
 
+	public void Append (
+		string param,
+		DataTable value,
+		string udtTypeName
+	) {
+		throw new NotImplementedException ();
+		// command.Parameters.Add (new NpgsqlParameter (param, SqlDbType.Udt));
+		// command.Parameters[param].Value = value;
+	}
 	#endregion
 
 

@@ -103,6 +103,7 @@ public interface ICommandHelper : IDisposable
 	void Append (string param, System.Collections.BitArray value);
 	void Append (string param, System.Collections.BitArray value, int size);
 
+	void Append (string name, DataTable value, string udtTypeName);
 
 	// time to play with returns
 	void Return (string param, SqlDbType dbtype);

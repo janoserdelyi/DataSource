@@ -1,3 +1,4 @@
+using System.Data;
 using System.Data.Common;
 using System.Text;
 using com.janoserdelyi.DataSource;
@@ -367,6 +368,60 @@ public class Database : IClassFixture<DatabaseFixture>
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.NotNull (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Call_ScalarFunction_ExpectTrue () {
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select prefs.IsSendableStatus(@EmailAddress) as foo;")
+					.AppendNvarchar ("EmailAddress", "jerdelyi@costar.com")
+					.Go<bool> ((cmd) => {
+						using (var dr = cmd.ExecuteReader ()) {
+							ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+							if (dr.Read ()) {
+								return cmd.DRH.GetBool ("foo");
+							}
+							throw new NullReferenceException ("error calling prefs.IsSendableStatus with value jerdelyi@costar.com");
+						}
+					});
+
+				Assert.True (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Append_Udt_ExpectSuccess () {
+
+		foreach (var connection in cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+
+				var dt = new DataTable ();
+				dt.Columns.Add ("id", typeof (int));
+				dt.Rows.Add (1);
+				dt.Rows.Add (2);
+				dt.Rows.Add (3);
+
+				var result = new Connect (MSSQL_CONNECTION_NAME)
+					.Query ("select id from @ids;")
+					.Append ("ids", dt, "dbo.IdArrayType")
+					.Go<List<int>> ((cmd) => {
+						using (var dr = cmd.ExecuteReader ()) {
+							ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+							var rets = new List<int> ();
+							while (dr.Read ()) {
+								rets.Add (cmd.DRH.GetInt ("id"));
+							}
+							return rets;
+						}
+					});
+
 			}
 		}
 	}
