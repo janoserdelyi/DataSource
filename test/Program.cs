@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Data;
 using com.janoserdelyi.DataSource;
 
@@ -41,7 +41,8 @@ class Program
 			Server = "CS01SQLPTSM231\\CRMPROCESS",
 			Database = "MarketingSupport",
 			IntegratedSecurity = "SSPI",
-			Encrypt = false
+			Encrypt = false,
+			CommandTimeout = "60"
 		};
 
 		ConnectionManager.Instance.AddConnection (mssqlBag);

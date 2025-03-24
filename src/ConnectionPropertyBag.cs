@@ -1,9 +1,10 @@
-using System.Text;
+﻿using System.Text;
 
 namespace com.janoserdelyi.DataSource;
 
 
-public class ConnectionPropertyBag {
+public class ConnectionPropertyBag
+{
 	public ConnectionPropertyBag () {
 
 	}
@@ -355,15 +356,19 @@ public class ConnectionPropertyBag {
 		}
 
 		if (MaxPoolSize != null) {
-			sb.Append ($"Max Pool Size={MaxPoolSize}");
+			sb.Append ($"Max Pool Size={MaxPoolSize};");
 		}
 
 		if (Timeout != null) {
-			sb.Append ($"Connection Timeout={Timeout}");
+			sb.Append ($"Connection Timeout={Timeout};");
+		}
+
+		if (!string.IsNullOrEmpty (CommandTimeout)) {
+			sb.Append ("Command Timeout=").Append (CommandTimeout).Append (';');
 		}
 
 		if (ApplicationName != null) {
-			sb.Append ($"Application Name={ApplicationName}");
+			sb.Append ($"Application Name={ApplicationName};");
 		}
 
 		//"App=HCL;"
