@@ -22,11 +22,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		int value
@@ -35,11 +30,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		long value
@@ -48,11 +38,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		short value
@@ -61,11 +46,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		byte value
@@ -103,11 +83,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 	// 		command.Parameters[param].Value = value;
 	// }
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		bool value
@@ -116,11 +91,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		char value
@@ -137,12 +107,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
-	/// <param name="size">size</param>
 	public void Append (
 		string param,
 		string? value,
@@ -180,22 +144,17 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
-	/// <param name="size">size</param>
 	public void AppendChar (
 		string param,
 		string value,
 		int size
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, size));
-		if (value == null)
+		if (value == null) {
 			command.Parameters[param].Value = DBNull.Value;
-		else
+		} else {
 			command.Parameters[param].Value = value;
+		}
 	}
 
 	public void Append (
@@ -204,11 +163,7 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 	) {
 		throw new NotImplementedException ();
 	}
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
+
 	public void AppendText (
 		string param,
 		string value
@@ -220,11 +175,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 			command.Parameters[param].Value = value;
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		DateTime value
@@ -244,14 +194,13 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		DateTimeOffset? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
-		command.Parameters[param].Value = value;
+		if (value.HasValue) {
+			command.Parameters[param].Value = value.Value;
+		} else {
+			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		Guid value
@@ -330,84 +279,64 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		int? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Int, 4));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		long? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.BigInt, 8));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		short? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		bool? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Bit, 1));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		char? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, 1));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
 	public void Append (
@@ -415,10 +344,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		System.Decimal? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
 	public void Append (
@@ -431,42 +361,35 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		} else {
 			command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
 		}
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		DateTime? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
-	/// <summary></summary>
-	/// <remarks>none</remarks>
-	/// <returns>void</returns>
-	/// <param name="param">Description for param</param>
-	/// <param name="value">value</param>
 	public void Append (
 		string param,
 		Guid? value
 	) {
 		command.Parameters.Add (new SqlParameter (param, SqlDbType.UniqueIdentifier));
-		if (value.HasValue)
+		if (value.HasValue) {
 			command.Parameters[param].Value = value.Value;
-		else
+		} else {
 			command.Parameters[param].Value = DBNull.Value;
+		}
 	}
 
 	public void Append (
