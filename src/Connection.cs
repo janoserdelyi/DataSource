@@ -1,6 +1,7 @@
 namespace com.janoserdelyi.DataSource;
 
-public class Connection : DbConnection, IDisposable {
+public class Connection : DbConnection, IDisposable
+{
 	#region constructors
 	public Connection (
 		DbConnection baseConnection,
@@ -159,3 +160,69 @@ public class Connection : DbConnection, IDisposable {
 	private readonly DatabaseType databaseType;
 	private ConnectionPropertyBag? propertyBag;
 }
+
+/*
+thinking about adding a bulk copy mechanism, but it may require a few things
+
+like on the model object, a proiperty indexer may be needed.
+i would bet this could be sped up but here goes :
+
+public object? this[string name] {
+	get {
+		var properties = typeof (MyModelObject).GetProperties (BindingFlags.Public | BindingFlags.Instance);
+
+		foreach (var property in properties) {
+			if (property.Name == name && property.CanRead) {
+				return property.GetValue (this, null);
+			}
+		}
+
+		throw new ArgumentException ("Can't find property");
+	}
+	set {
+		return;
+	}
+}
+
+then a method to convert to a DataTable :
+
+public static DataTable ConvertToDataTable (
+	List<MyModelObject> records
+) {
+	var props = TypeDescriptor.GetProperties (typeof (MyModelObject));
+
+	DataTable dt = new DataTable ();
+
+	foreach (PropertyDescriptor p in props) {
+		dt.Columns.Add (p.Name, p.PropertyType.BaseType ?? p.PropertyType);
+	}
+
+	foreach (var record in records) {
+		var row = dt.NewRow ();
+
+		foreach (PropertyDescriptor p in props) {
+			row[p.Name] = record[p.Name];
+		}
+
+		dt.Rows.Add (row);
+	}
+
+	return dt;
+}
+
+then actual usage :
+
+var dt = MyModelObject.ConvertToDataTable (records);
+
+using (SqlConnection cn = new SqlConnection (ConnectionManager.Instance.GetConnection (connectionName).ConnectionString)) {
+	cn.Open ();
+	using (SqlBulkCopy bulkCopy = new SqlBulkCopy (cn)) {
+		bulkCopy.DestinationTableName = "prefs.MyModelObject";
+		bulkCopy.WriteToServer (dt);
+	}
+	cn.Close ();
+}
+
+i think this implementation is naive and needs to be looked at more
+
+*/
