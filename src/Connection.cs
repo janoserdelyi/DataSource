@@ -225,4 +225,40 @@ using (SqlConnection cn = new SqlConnection (ConnectionManager.Instance.GetConne
 
 i think this implementation is naive and needs to be looked at more
 
+
+here's an example of using a user-defined type. basically stuff it with a datatable
+
+var chunkTable = new DataTable ();
+chunkTable.Columns.Add ("EmailAddress", typeof (string));
+chunkTable.Columns.Add ("ContactId", typeof (int));
+chunkTable.Columns.Add ("UpdatedByContactId", typeof (int));
+chunkTable.Columns.Add ("ActivitySourceCd", typeof (string));
+chunkTable.Columns.Add ("CountryCode", typeof (string));
+chunkTable.Columns.Add ("EmailValidationStatusId", typeof (int));
+chunkTable.Columns.Add ("LastValidatedDate", typeof (DateTimeOffset));
+chunkTable.Columns.Add ("RequestedBy", typeof (string));
+
+foreach (var insertionChunk in insertionChunks) {
+	chunkTable.Rows.Clear ();
+
+	foreach (var record in insertionChunk) {
+		var row = chunkTable.NewRow ();
+		row["EmailAddress"] = record.Emailaddress;
+		row["ContactId"] = DBNull.Value;
+		row["UpdatedByContactId"] = 207444921;
+		row["ActivitySourceCd"] = DBNull.Value;
+		row["CountryCode"] = DBNull.Value;
+		row["EmailValidationStatusId"] = DBNull.Value;
+		row["LastValidatedDate"] = DBNull.Value;
+		row["RequestedBy"] = DBNull.Value;
+		chunkTable.Rows.Add (row);
+	}
+
+	var result = new Connect (connectionName)
+		.Query ("exec prefs.uspInsertEmailAddress @pEmailsToInsert;")
+		.Append ("pEmailsToInsert", chunkTable, "prefs.InsertEmailAddressType")
+		.Go ();
+}
+
+
 */
