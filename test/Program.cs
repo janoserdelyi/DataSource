@@ -7,11 +7,12 @@ namespace test;
 class Program
 {
 
-	private static string getString (
+	private static string? getString (
 		Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			string ret = null;
+			ArgumentNullException.ThrowIfNull (cmd.DRH);
+			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetString ("a_string");
 			}
@@ -19,11 +20,12 @@ class Program
 		}
 	}
 
-	private static string getRegconfig (
+	private static string? getRegconfig (
 		Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			string ret = null;
+			ArgumentNullException.ThrowIfNull (cmd.DRH);
+			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetRegconfig ("reg");
 			}
@@ -35,12 +37,23 @@ class Program
 		Console.WriteLine ("Hello World!");
 
 		// 2024-10-29 here we are nearly a year later :)
+		// var mssqlBag = new ConnectionPropertyBag () {
+		// 	DatabaseType = DatabaseType.MSSQL,
+		// 	Name = "MarketingSupport",
+		// 	Server = "CS01SQLPTSM231\\CRMPROCESS",
+		// 	Database = "MarketingSupport",
+		// 	IntegratedSecurity = "SSPI",
+		// 	Encrypt = false,
+		// 	CommandTimeout = "60"
+		// };
+
 		var mssqlBag = new ConnectionPropertyBag () {
 			DatabaseType = DatabaseType.MSSQL,
 			Name = "MarketingSupport",
-			Server = "CS01SQLPTSM231\\CRMPROCESS",
+			Server = "CS01SQLPTSM631.usweb.costar.local\\MKTSUPPORT",
 			Database = "MarketingSupport",
 			IntegratedSecurity = "SSPI",
+			//TrustedConnection = true,
 			Encrypt = false,
 			CommandTimeout = "60"
 		};

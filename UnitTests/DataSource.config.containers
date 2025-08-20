@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<configuration>
+	<connections>
+		<!-- PostgreSQL Container -->
+		<connection>
+			<name>TestPostgresql</name>
+			<dbtype>postgresql</dbtype>
+			<server>localhost</server>
+			<port>5432</port>
+			<database>testdb</database>
+			<username>testuser</username>
+			<password>testpassword123</password>
+		</connection>
+
+		<!-- SQL Server Container -->
+		<connection>
+			<name>TestMssql</name>
+			<dbtype>mssql</dbtype>
+			<server>localhost</server>
+			<port>1433</port>
+			<database>testdb</database>
+			<username>testuser</username>
+			<password>TestPassword123!</password>
+			<encrypt>false</encrypt>
+			<trustservercertificate>true</trustservercertificate>
+		</connection>
+
+		<!-- MariaDB Container -->
+		<connection>
+			<name>TestMariadb</name>
+			<dbtype>mysql</dbtype>
+			<server>localhost</server>
+			<port>3306</port>
+			<database>testdb</database>
+			<username>testuser</username>
+			<password>testpassword123</password>
+		</connection>
+	</connections>
+</configuration>

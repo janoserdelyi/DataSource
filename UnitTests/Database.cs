@@ -50,6 +50,25 @@ active bit not null default 1,
 created_dt datetimeoffset not null default sysdatetimeoffset()
 				);").Go ();
 			}
+			if (connection.Value.DatabaseType == DatabaseType.MySql) {
+				// establish a table to test against
+				new Connect (MYSQL_CONNECTION_NAME).Query ("drop table if exists test;").Go ();
+
+				// create the table with all sorts of data types
+				new Connect (MYSQL_CONNECTION_NAME).Query (@"create table test (
+id int primary key auto_increment,
+surrogate varchar(20) not null unique,
+name varchar(100) not null,
+big_number bigint not null,
+small_number smallint not null,
+single_byte tinyint unsigned not null,
+bytes varbinary(1024) not null,
+charv varchar(25) not null,
+charnv varchar(25) not null,
+active tinyint(1) not null default 1,
+created_dt timestamp not null default current_timestamp
+				);").Go ();
+			}
 
 			insertTestRecord (connection.Value.DatabaseType);
 		}
@@ -64,6 +83,10 @@ created_dt datetimeoffset not null default sysdatetimeoffset()
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				// establish a table to test against
 				new Connect (MSSQL_CONNECTION_NAME).Query ("drop table if exists dbo.test;").Go ();
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MySql) {
+				// establish a table to test against
+				new Connect (MYSQL_CONNECTION_NAME).Query ("drop table if exists test;").Go ();
 			}
 		}
 	}
@@ -141,6 +164,43 @@ values (
 					.AppendVarchar ("charv", values.Charv)
 					.AppendNvarchar ("charnv", values.Charnv)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
+			case DatabaseType.MySql:
+				new Connect (MYSQL_CONNECTION_NAME)
+					.Query (@"insert into test (
+	surrogate,
+	name,
+	big_number,
+	small_number,
+	single_byte,
+	bytes,
+	charv,
+	charnv
+)
+values (
+	?surrogate,
+	?name,
+	?big_number,
+	?small_number,
+	?single_byte,
+	?bytes,
+	?charv,
+	?charnv
+);")
+					.Append ("surrogate", values.Surrogate)
+					.Append ("name", values.Name)
+					.Append ("big_number", values.BigNumber)
+					.Append ("small_number", values.SmallNumber)
+					.Append ("single_byte", values.SingleByte)
+					.Append ("bytes", values.Bytes)
+					.AppendVarchar ("charv", values.Charv)
+					.AppendVarchar ("charnv", values.Charnv)
+					.Go ();
+
+				// MySQL doesn't have RETURNING, so we need a separate query to get the inserted record
+				return new Connect (MYSQL_CONNECTION_NAME)
+					.Query ("select * from test where surrogate = ?surrogate;")
+					.Append ("surrogate", values.Surrogate)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
 		}
 
 		return null;
@@ -149,6 +209,7 @@ values (
 	public ConnectionManager ConnectionManager { get; set; }
 	public readonly string POSTGRESQL_CONNECTION_NAME = "TestPostgresql";
 	public readonly string MSSQL_CONNECTION_NAME = "TestMssql";
+	public readonly string MYSQL_CONNECTION_NAME = "TestMariadb";
 }
 
 public class Database : IClassFixture<DatabaseFixture>
@@ -158,6 +219,7 @@ public class Database : IClassFixture<DatabaseFixture>
 	readonly ConnectionManager cm;
 	readonly string POSTGRESQL_CONNECTION_NAME;
 	readonly string MSSQL_CONNECTION_NAME;
+	readonly string MYSQL_CONNECTION_NAME;
 
 	public Database (
 		DatabaseFixture fixture
@@ -167,6 +229,7 @@ public class Database : IClassFixture<DatabaseFixture>
 		cm = fixture.ConnectionManager;
 		POSTGRESQL_CONNECTION_NAME = this.fixture.POSTGRESQL_CONNECTION_NAME;
 		MSSQL_CONNECTION_NAME = this.fixture.MSSQL_CONNECTION_NAME;
+		MYSQL_CONNECTION_NAME = this.fixture.MYSQL_CONNECTION_NAME;
 	}
 
 	[Fact]
@@ -179,6 +242,11 @@ public class Database : IClassFixture<DatabaseFixture>
 			}
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				var record = new Connect (MSSQL_CONNECTION_NAME).Query ("select * from dbo.test where name = 'bar';").Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.Null (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MySql) {
+				var record = new Connect (MYSQL_CONNECTION_NAME).Query ("select * from test where name = 'bar';").Go<TestRecord?> (TestRecord.getTestRecord);
 
 				Assert.Null (record);
 			}
@@ -237,6 +305,14 @@ public class Database : IClassFixture<DatabaseFixture>
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where id = @id;")
+					.Append ("id", id)
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MySql) {
+				var record = new Connect (MYSQL_CONNECTION_NAME)
+					.Query ("select * from test where id = ?id;")
 					.Append ("id", id)
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
@@ -336,6 +412,14 @@ public class Database : IClassFixture<DatabaseFixture>
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				var record = new Connect (MSSQL_CONNECTION_NAME)
 					.Query ("select * from dbo.test where name = @name;")
+					.Append ("name", "foo")
+					.Go<TestRecord?> (TestRecord.getTestRecord);
+
+				Assert.NotNull (record);
+			}
+			if (connection.Value.DatabaseType == DatabaseType.MySql) {
+				var record = new Connect (MYSQL_CONNECTION_NAME)
+					.Query ("select * from test where name = ?name;")
 					.Append ("name", "foo")
 					.Go<TestRecord?> (TestRecord.getTestRecord);
 
