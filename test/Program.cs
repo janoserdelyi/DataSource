@@ -7,11 +7,13 @@ namespace test;
 class Program
 {
 
-	private static string getString (
+	private static string? getString (
 		Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			string ret = null;
+			ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetString ("a_string");
 			}
@@ -19,11 +21,13 @@ class Program
 		}
 	}
 
-	private static string getRegconfig (
+	private static string? getRegconfig (
 		Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			string ret = null;
+			ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetRegconfig ("reg");
 			}
@@ -267,7 +271,9 @@ values (:a_string, :a_nullable_int, :an_int, :a_nullable_jsonb, :an_inet);";
 		com.janoserdelyi.DataSource.Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			System.Collections.Generic.IList<string> rets = new System.Collections.Generic.List<string> ();
+			ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+			var rets = new System.Collections.Generic.List<string> ();
 			while (dr.Read ()) {
 				rets.Add (cmd.DRH.GetString ("a_string"));
 			}
