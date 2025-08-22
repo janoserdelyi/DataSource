@@ -224,6 +224,9 @@ public class ConnectionManager
 			if (connectionNode.SelectSingleNode ("encrypt") != null) {
 				connectionPropertyBag.Encrypt = Boolean.Parse (connectionNode.SelectSingleNode ("encrypt")?.InnerText!);
 			}
+			if (connectionNode.SelectSingleNode ("trustedconnection") != null) {
+				connectionPropertyBag.TrustedConnection = Boolean.Parse (connectionNode.SelectSingleNode ("trustedconnection")?.InnerText!);
+			}
 			if (connectionNode.SelectSingleNode ("integratedsecurity") != null) {
 				connectionPropertyBag.IntegratedSecurity = connectionNode.SelectSingleNode ("integratedsecurity")?.InnerText!;
 			}

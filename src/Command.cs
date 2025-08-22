@@ -1,6 +1,7 @@
 namespace com.janoserdelyi.DataSource;
 
-public class Command : DbCommand, IDisposable {
+public class Command : DbCommand, IDisposable
+{
 
 	public Command (
 		Connection connection,
@@ -67,7 +68,7 @@ public class Command : DbCommand, IDisposable {
 		this.baseCommand.Prepare ();
 	}
 
-	protected override DbDataReader ExecuteDbDataReader ( CommandBehavior behavior ) {
+	protected override DbDataReader ExecuteDbDataReader (CommandBehavior behavior) {
 		throw new NotImplementedException ();
 	}
 

@@ -343,10 +343,8 @@ public class CommandHelperPostgresql : ICommandHelper, IDisposable
 		if (value == null) {
 			command.Parameters[param].Value = DBNull.Value;
 		} else {
-			var inet = new NpgsqlInet (value);
 			// do i want to try to get the netmask from the broadcast?
-			//command.Parameters[param].Value = new ValueTuple<System.Net.IPAddress, int> (value, netmask);
-			command.Parameters[param].Value = inet;
+			command.Parameters[param].Value = new ValueTuple<System.Net.IPAddress, int> (value, netmask);
 		}
 	}
 

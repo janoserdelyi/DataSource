@@ -12,7 +12,6 @@ class Program
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
 			ArgumentNullException.ThrowIfNull (cmd.DRH);
-
 			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetString ("a_string");
@@ -26,7 +25,6 @@ class Program
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
 			ArgumentNullException.ThrowIfNull (cmd.DRH);
-
 			string? ret = null;
 			if (dr.Read ()) {
 				return cmd.DRH.GetRegconfig ("reg");
@@ -39,12 +37,23 @@ class Program
 		Console.WriteLine ("Hello World!");
 
 		// 2024-10-29 here we are nearly a year later :)
+		// var mssqlBag = new ConnectionPropertyBag () {
+		// 	DatabaseType = DatabaseType.MSSQL,
+		// 	Name = "MarketingSupport",
+		// 	Server = "CS01SQLPTSM231\\CRMPROCESS",
+		// 	Database = "MarketingSupport",
+		// 	IntegratedSecurity = "SSPI",
+		// 	Encrypt = false,
+		// 	CommandTimeout = "60"
+		// };
+
 		var mssqlBag = new ConnectionPropertyBag () {
 			DatabaseType = DatabaseType.MSSQL,
 			Name = "MarketingSupport",
-			Server = "CS01SQLPTSM231\\CRMPROCESS",
+			Server = "CS01SQLPTSM631.usweb.costar.local\\MKTSUPPORT",
 			Database = "MarketingSupport",
 			IntegratedSecurity = "SSPI",
+			//TrustedConnection = true,
 			Encrypt = false,
 			CommandTimeout = "60"
 		};
@@ -271,9 +280,7 @@ values (:a_string, :a_nullable_int, :an_int, :a_nullable_jsonb, :an_inet);";
 		com.janoserdelyi.DataSource.Command cmd
 	) {
 		using (IDataReader dr = cmd.ExecuteReader ()) {
-			ArgumentNullException.ThrowIfNull (cmd.DRH);
-
-			var rets = new System.Collections.Generic.List<string> ();
+			System.Collections.Generic.IList<string> rets = new System.Collections.Generic.List<string> ();
 			while (dr.Read ()) {
 				rets.Add (cmd.DRH.GetString ("a_string"));
 			}
