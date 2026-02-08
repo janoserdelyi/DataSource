@@ -17,6 +17,7 @@ public class ConnectionPropertyBag
 		if (!parsedStrings.ContainsKey (connectionString)) {
 			parsedStrings.Add (connectionString, Parse (connectionString, dbType));
 		}
+
 		if (!parsedStrings.ContainsKey (connectionString)) {
 			parsedStrings.Add (connectionString, Parse (connectionString, dbType));
 		}
@@ -78,22 +79,18 @@ public class ConnectionPropertyBag
 
 	private static Dictionary<string, ConnectionPropertyBag> parsedStrings { get; set; } = new Dictionary<string, ConnectionPropertyBag> ();
 
-	private static readonly char[] separator = new char[] { ';' };
+	private static readonly char[] _separator = new char[] { ';' };
 
 	public override string ToString () {
 		//no db type, no play. throw an exception
 		//i used to allow a default for older projects. older projects will be using an older dll.
 
-		switch (this.DatabaseType) {
-			case com.janoserdelyi.DataSource.DatabaseType.MSSQL:
-				return makeMssqlConnectionString ();
-			case com.janoserdelyi.DataSource.DatabaseType.Postgresql:
-				return makePostgresqlConnectionString ();
-			case com.janoserdelyi.DataSource.DatabaseType.MySql:
-				return makeMysqlConnectionString ();
-			default:
-				throw new ArgumentException (this.DatabaseType.ToString () + "  is not a supported Database type");
-		}
+		return DatabaseType switch {
+			DatabaseType.MSSQL => makeMssqlConnectionString (),
+			DatabaseType.Postgresql => makePostgresqlConnectionString (),
+			DatabaseType.MySql => makeMysqlConnectionString (),
+			_ => throw new ArgumentException (DatabaseType.ToString () + "  is not a supported Database type"),
+		};
 	}
 
 	public static ConnectionPropertyBag Parse (
@@ -116,7 +113,7 @@ public class ConnectionPropertyBag
 		//the name is original string passed in
 		bag.Name = connectionString;
 
-		if (dbType == com.janoserdelyi.DataSource.DatabaseType.MSSQL) {
+		if (dbType == DatabaseType.MSSQL) {
 			/*	take what i get an try to get these parts:
 				server[,<port>];database;[uid;pwd;]
 			*/
@@ -140,21 +137,27 @@ public class ConnectionPropertyBag
 						bag.Server = part.Split ('=')[1];
 					}
 				}
+
 				if (part.ToLower ().StartsWith ("database", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Database = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("uid", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Username = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("user id", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Username = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("pwd", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Password = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("password", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Password = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("server", StringComparison.CurrentCultureIgnoreCase)) {
 					//this is most variable one of the group
 					//it can be server=xxx.xxx.xxx.xxx;
@@ -170,6 +173,7 @@ public class ConnectionPropertyBag
 				if (part.ToLower ().StartsWith ("max pool size", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.MaxPoolSize = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("min pool size", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.MinPoolSize = part.Split ('=')[1];
 				}
@@ -188,9 +192,11 @@ public class ConnectionPropertyBag
 				if (part.ToLower ().StartsWith ("integrated security", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.IntegratedSecurity = part.Split ('=')[1];
 				}
+
 				if (part.ToLower ().StartsWith ("encrypt", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.Encrypt = part.Split ('=')[1].ToLower () == "true" ? true : false;
 				}
+
 				if (part.ToLower ().StartsWith ("trusted_connection", StringComparison.CurrentCultureIgnoreCase)) {
 					bag.TrustedConnection = part.Split ('=')[1].ToLower () == "true" ? true : false;
 				}
@@ -200,10 +206,10 @@ public class ConnectionPropertyBag
 			}
 		}
 
-		if (dbType == com.janoserdelyi.DataSource.DatabaseType.Postgresql) {
+		if (dbType == DatabaseType.Postgresql) {
 			// example:
 			// Server=192.168.1.61;Port=5432;User Id=merryfool;Password=pitythefool;Database=merryfool_db;encoding=unicode;
-			string[] parts = connectionString.Split (separator, StringSplitOptions.RemoveEmptyEntries);
+			string[] parts = connectionString.Split (_separator, StringSplitOptions.RemoveEmptyEntries);
 
 			foreach (string part in parts) {
 
@@ -249,6 +255,7 @@ public class ConnectionPropertyBag
 						} else {
 							bag.Pooling = true; // default
 						}
+
 						break;
 					case "maxpoolsize":
 					case "maximum pool size":
@@ -277,6 +284,7 @@ public class ConnectionPropertyBag
 						} else {
 							bag.IncludeErrorDetail = false; // default
 						}
+
 						break;
 
 					// SSL/Security parameters
@@ -289,6 +297,7 @@ public class ConnectionPropertyBag
 						if (bool.TryParse (value, out bool tsc)) {
 							bag.TrustServerCertificate = tsc;
 						}
+
 						break;
 					case "ssl certificate":
 					case "sslcert":
@@ -311,6 +320,7 @@ public class ConnectionPropertyBag
 						if (bool.TryParse (value, out bool ccr)) {
 							bag.CheckCertificateRevocation = ccr;
 						}
+
 						break;
 
 					// Performance parameters
@@ -335,6 +345,7 @@ public class ConnectionPropertyBag
 						if (bool.TryParse (value, out bool nroc)) {
 							bag.NoResetOnClose = nroc;
 						}
+
 						break;
 
 					// Connection management parameters
@@ -354,6 +365,7 @@ public class ConnectionPropertyBag
 						if (bool.TryParse (value, out bool enlist)) {
 							bag.Enlist = enlist;
 						}
+
 						break;
 
 					// Advanced feature parameters
@@ -373,12 +385,13 @@ public class ConnectionPropertyBag
 						if (bool.TryParse (value, out bool lp)) {
 							bag.LogParameters = lp;
 						}
+
 						break;
 				}
 			}
 		}
 
-		if (dbType == com.janoserdelyi.DataSource.DatabaseType.MySql) {
+		if (dbType == DatabaseType.MySql) {
 			//example:
 			//server=50.56.110.52;port=3306;database=manhattan_ewbtesst;uid=dobiesync;pwd=dobiedoo;
 			string[] parts = connectionString.Split (';');
@@ -394,12 +407,15 @@ public class ConnectionPropertyBag
 				if (partcompare.StartsWith ("server")) {
 					bag.Server = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("port")) {
 					bag.Port = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("database")) {
 					bag.Database = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("uid")) {
 					bag.Username = part.Split ('=')[1];
 				}
@@ -407,6 +423,7 @@ public class ConnectionPropertyBag
 				if (partcompare.StartsWith ("uid")) {
 					bag.Username = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("pwd")) {
 					bag.Password = part.Split ('=')[1];
 				}
@@ -414,15 +431,19 @@ public class ConnectionPropertyBag
 				if (partcompare.StartsWith ("password")) {
 					bag.Password = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("charset")) {
 					bag.Encoding = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("connection timeout")) {
 					bag.Timeout = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("maximumpoolsize")) {
 					bag.MaxPoolSize = part.Split ('=')[1];
 				}
+
 				if (partcompare.StartsWith ("minimumpoolsize")) {
 					bag.MinPoolSize = part.Split ('=')[1];
 				}
@@ -444,6 +465,7 @@ public class ConnectionPropertyBag
 		if (Port != null && !Port.Equals ("1433")) {
 			sb.Append (',').Append (Port);
 		}
+
 		sb.Append (';');
 
 		sb.Append ($"database={Database};");
@@ -480,9 +502,11 @@ public class ConnectionPropertyBag
 		if (IntegratedSecurity != null) {
 			sb.Append ($"Integrated Security={IntegratedSecurity};");
 		}
+
 		if (Encrypt != null) {
 			sb.Append ($"Encrypt={(Encrypt.Value ? "true" : "false")};");
 		}
+
 		if (TrustedConnection != null) {
 			sb.Append ($"Trusted_Connection={(TrustedConnection.Value ? "true" : "false")};");
 		}
@@ -522,7 +546,6 @@ public class ConnectionPropertyBag
 			sb.Append ($"Port={Port};");
 		}
 
-
 		//database
 		sb.Append ($"Database={Database};");
 
@@ -539,6 +562,7 @@ public class ConnectionPropertyBag
 		if (!string.IsNullOrEmpty (Password) && string.IsNullOrEmpty (Passfile)) {
 			sb.Append ($"Password={Password};");
 		}
+
 		if (!string.IsNullOrEmpty (Passfile)) {
 			sb.Append ($"Passfile={Passfile};");
 		}
@@ -592,21 +616,27 @@ public class ConnectionPropertyBag
 		if (!string.IsNullOrEmpty (SslMode)) {
 			sb.Append ($"SSL Mode={SslMode};");
 		}
+
 		if (TrustServerCertificate == true) {
 			sb.Append ("Trust Server Certificate=True;");
 		}
+
 		if (!string.IsNullOrEmpty (SslCertificate)) {
 			sb.Append ($"SSL Certificate={SslCertificate};");
 		}
+
 		if (!string.IsNullOrEmpty (SslKey)) {
 			sb.Append ($"SSL Key={SslKey};");
 		}
+
 		if (!string.IsNullOrEmpty (SslPassword)) {
 			sb.Append ($"SSL Password={SslPassword};");
 		}
+
 		if (!string.IsNullOrEmpty (RootCertificate)) {
 			sb.Append ($"Root Certificate={RootCertificate};");
 		}
+
 		if (CheckCertificateRevocation == true) {
 			sb.Append ("Check Certificate Revocation=True;");
 		}
@@ -615,12 +645,15 @@ public class ConnectionPropertyBag
 		if (!string.IsNullOrEmpty (MaxAutoPrepare)) {
 			sb.Append ($"Max Auto Prepare={MaxAutoPrepare};");
 		}
+
 		if (!string.IsNullOrEmpty (AutoPrepareMinUsages)) {
 			sb.Append ($"Auto Prepare Min Usages={AutoPrepareMinUsages};");
 		}
+
 		if (!string.IsNullOrEmpty (ReadBufferSize)) {
 			sb.Append ($"Read Buffer Size={ReadBufferSize};");
 		}
+
 		if (!string.IsNullOrEmpty (WriteBufferSize)) {
 			sb.Append ($"Write Buffer Size={WriteBufferSize};");
 		}
@@ -629,9 +662,11 @@ public class ConnectionPropertyBag
 		if (!string.IsNullOrEmpty (ConnectionIdleLifetime)) {
 			sb.Append ($"Connection Idle Lifetime={ConnectionIdleLifetime};");
 		}
+
 		if (!string.IsNullOrEmpty (ConnectionLifetime)) {
 			sb.Append ($"Connection Lifetime={ConnectionLifetime};");
 		}
+
 		if (Enlist == false) {
 			sb.Append ("Enlist=False;");
 		}
@@ -640,20 +675,24 @@ public class ConnectionPropertyBag
 		if (!string.IsNullOrEmpty (SearchPath)) {
 			sb.Append ($"Search Path={SearchPath};");
 		}
+
 		if (!string.IsNullOrEmpty (Timezone)) {
 			sb.Append ($"Timezone={Timezone};");
 		}
+
 		if (!string.IsNullOrEmpty (Options)) {
 			sb.Append ($"Options={Options};");
 		}
+
 		if (LogParameters == true) {
 			sb.Append ("Log Parameters=True;");
 		}
+
 		if (NoResetOnClose == true) {
 			sb.Append ("No Reset On Close=True;");
 		}
 
-		string temp = sb.ToString ();
+		// string temp = sb.ToString ();
 
 		return sb.ToString ();
 	}

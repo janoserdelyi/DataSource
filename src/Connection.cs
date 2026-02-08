@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace com.janoserdelyi.DataSource;
 
 public class Connection : DbConnection, IDisposable
@@ -7,8 +9,8 @@ public class Connection : DbConnection, IDisposable
 		DbConnection baseConnection,
 		DatabaseType databaseType
 	) {
-		this.baseConnection = baseConnection;
-		this.databaseType = databaseType;
+		BaseConnection = baseConnection;
+		DatabaseType = databaseType;
 	}
 
 	public Connection (
@@ -18,9 +20,9 @@ public class Connection : DbConnection, IDisposable
 		ArgumentNullException.ThrowIfNull (baseConnection);
 		ArgumentNullException.ThrowIfNull (propertyBag);
 
-		this.baseConnection = baseConnection;
-		this.propertyBag = propertyBag;
-		this.databaseType = propertyBag.DatabaseType;
+		BaseConnection = baseConnection;
+		PropertyBag = propertyBag;
+		DatabaseType = propertyBag.DatabaseType;
 	}
 	#endregion
 
@@ -31,7 +33,7 @@ public class Connection : DbConnection, IDisposable
 		return new Command (this, commandText);
 	}
 
-	internal System.Data.Common.DbCommand GetDbCommand (
+	internal System.Data.Common.DbCommand getDbCommand (
 		string commandText
 	) {
 		if (string.IsNullOrEmpty (commandText)) {
@@ -40,125 +42,112 @@ public class Connection : DbConnection, IDisposable
 
 		//nothing fancy here
 		DbCommand command;
-		switch (this.databaseType) {
+		switch (DatabaseType) {
 			case DatabaseType.MSSQL:
 				//throw new NotSupportedException ("MSSQL removed");
-				command = new Microsoft.Data.SqlClient.SqlCommand (commandText, (Microsoft.Data.SqlClient.SqlConnection)this.baseConnection);
-				command.CommandType = CommandType.StoredProcedure;
+				command = new Microsoft.Data.SqlClient.SqlCommand (commandText, (Microsoft.Data.SqlClient.SqlConnection)BaseConnection) {
+					CommandType = CommandType.StoredProcedure
+				};
 				return command;
 			case DatabaseType.Postgresql:
-				command = new Npgsql.NpgsqlCommand (commandText, (Npgsql.NpgsqlConnection)this.baseConnection);
-				command.CommandType = CommandType.StoredProcedure;
+				command = new Npgsql.NpgsqlCommand (commandText, (Npgsql.NpgsqlConnection)BaseConnection) {
+					CommandType = CommandType.StoredProcedure
+				};
 				return command;
 			case DatabaseType.MySql:
-				command = new MySqlConnector.MySqlCommand (commandText, (MySqlConnector.MySqlConnection)this.baseConnection);
-				//command = new MySql.Data.MySqlClient.MySqlCommand (commandText, (MySql.Data.MySqlClient.MySqlConnection)this.baseConnection);
-				command.CommandType = CommandType.StoredProcedure;
+				command = new MySqlConnector.MySqlCommand (commandText, (MySqlConnector.MySqlConnection)BaseConnection) {
+					//command = new MySql.Data.MySqlClient.MySqlCommand (commandText, (MySql.Data.MySqlClient.MySqlConnection)this.baseConnection);
+					CommandType = CommandType.StoredProcedure
+				};
 				return command;
 			default:
-				throw new System.ArgumentException ("Invalid database type supplied : " + databaseType.ToString ());
+				throw new System.ArgumentException ("Invalid database type supplied : " + DatabaseType.ToString ());
 		}
 
-		throw new System.ArgumentException ("Invalid database type supplied : " + databaseType.ToString ());
+		throw new System.ArgumentException ("Invalid database type supplied : " + DatabaseType.ToString ());
 	}
 
 	public ICommandHelper GetCommandHelper () {
-		switch (this.databaseType) {
-			case DatabaseType.MSSQL:
-				//throw new NotSupportedException ("MSSQL removed");
-				return new CommandHelperMssql ();
-			case DatabaseType.Postgresql:
-				return new CommandHelperPostgresql ();
-			case DatabaseType.MySql:
-				return new CommandHelperMysql ();
-			default:
-				throw new Exception ("Error finding command helper. '" + databaseType.ToString () + "' is not a currently supported database");
-		}
+		return DatabaseType switch {
+			DatabaseType.MSSQL => new CommandHelperMssql (),//throw new NotSupportedException ("MSSQL removed");
+			DatabaseType.Postgresql => new CommandHelperPostgresql (),
+			DatabaseType.MySql => new CommandHelperMysql (),
+			_ => throw new Exception ("Error finding command helper. '" + DatabaseType.ToString () + "' is not a currently supported database"),
+		};
 	}
 	#endregion
 
 	#region abstract DbConnection inheritor obligations
 	public override void Open () {
-		if (baseConnection.State != ConnectionState.Open) {
-			baseConnection.Open ();
+		if (BaseConnection.State != ConnectionState.Open) {
+			BaseConnection.Open ();
 		}
 	}
 
 	protected override DbCommand CreateDbCommand () {
-		return baseConnection.CreateCommand ();
+		return BaseConnection.CreateCommand ();
 	}
 
 	public override void ChangeDatabase (
 		string databaseName
 	) {
-		baseConnection.ChangeDatabase (databaseName);
+		BaseConnection.ChangeDatabase (databaseName);
 	}
 
 	//public override event StateChangeEventHandler StateChange;
 
 	public override void Close () {
-		if (baseConnection.State != ConnectionState.Closed) {
-			baseConnection.Close ();
+		if (BaseConnection.State != ConnectionState.Closed) {
+			BaseConnection.Close ();
 		}
 	}
 
+	[AllowNull]
 	public override string ConnectionString {
 		get {
-			return baseConnection.ConnectionString;
+			return BaseConnection.ConnectionString;
 		}
 		set {
-			baseConnection.ConnectionString = value;
+			BaseConnection.ConnectionString = value;
 		}
 	}
 
 	public override System.Data.ConnectionState State {
-		get { return baseConnection.State; }
+		get { return BaseConnection.State; }
 	}
 
 	public override string ServerVersion {
-		get { return baseConnection.ServerVersion; }
+		get { return BaseConnection.ServerVersion; }
 	}
 
 	public override string Database {
-		get { return baseConnection.Database; }
+		get { return BaseConnection.Database; }
 	}
 
 	public override string DataSource {
-		get { return baseConnection.DataSource; }
+		get { return BaseConnection.DataSource; }
 	}
 
 	protected override DbTransaction BeginDbTransaction (
 		IsolationLevel isolationLevel
 	) {
-		return baseConnection.BeginTransaction (isolationLevel);
+		return BaseConnection.BeginTransaction (isolationLevel);
 	}
 	#endregion
 
 	#region IDisposable oblitgations
 	public new void Dispose () {
-		if (baseConnection != null && baseConnection.State != ConnectionState.Closed) {
-			baseConnection.Close ();
+		if (BaseConnection != null && BaseConnection.State != ConnectionState.Closed) {
+			BaseConnection.Close ();
 		}
 	}
 	#endregion
 
-	public DbConnection BaseConnection {
-		get { return baseConnection; }
-		set { baseConnection = value; }
-	}
+	public DbConnection BaseConnection { get; set; }
 
-	public DatabaseType DatabaseType {
-		get { return databaseType; }
-	}
+	public DatabaseType DatabaseType { get; }
 
-	public ConnectionPropertyBag? PropertyBag {
-		get { return propertyBag; }
-		set { propertyBag = value; }
-	}
-
-	private DbConnection baseConnection;
-	private readonly DatabaseType databaseType;
-	private ConnectionPropertyBag? propertyBag;
+	public ConnectionPropertyBag? PropertyBag { get; set; }
 }
 
 /*
@@ -259,6 +248,5 @@ foreach (var insertionChunk in insertionChunks) {
 		.Append ("pEmailsToInsert", chunkTable, "prefs.InsertEmailAddressType")
 		.Go ();
 }
-
 
 */
