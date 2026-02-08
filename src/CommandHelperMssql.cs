@@ -1,4 +1,4 @@
-﻿using System.Text;
+﻿// using System.Text;
 using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource;
@@ -7,61 +7,58 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 {
 
 	public CommandHelperMssql () {
-		command = new SqlCommand ();
+		_command = new SqlCommand ();
 	}
 
 	public DbCommand Command {
-		set { command = (SqlCommand)value; }
+		set { _command = (SqlCommand)value; }
 	}
 
 	//added 2008 01 09 janos erdelyi - to allow for IDisposable
 	public void Dispose () {
-		if (command != null) {
-			command.Cancel ();
-			//command.Dispose();
-		}
+		_command?.Cancel ();
 	}
 
 	public void Append (
 		string param,
 		int value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Int, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Int, 4));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		long value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.BigInt, 8));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.BigInt, 8));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		short value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		byte value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
-		command.Parameters[param].Value = (byte[])[value];
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
+		_command.Parameters[param].Value = (byte[])[value];
 	}
 	public void Append (
 		string param,
 		byte? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Binary, 1));
 		if (value.HasValue) {
-			command.Parameters[param].Value = (byte[])[value.Value];
+			_command.Parameters[param].Value = (byte[])[value.Value];
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -69,8 +66,8 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		byte[] value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.VarBinary));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.VarBinary));
+		_command.Parameters[param].Value = value;
 	}
 	// public void Append (
 	// 	string param,
@@ -87,24 +84,24 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		bool value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Bit, 1));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Bit, 1));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		char value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, 1));
-		command.Parameters[param].Value = value.ToString ();
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, 1));
+		_command.Parameters[param].Value = value.ToString ();
 	}
 
 	public void Append (
 		string param,
-		System.Decimal value
+		decimal value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
@@ -112,11 +109,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string? value,
 		int size
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.VarChar, size));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.VarChar, size));
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -124,11 +121,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.NVarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.NVarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -136,11 +133,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.VarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.VarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -149,11 +146,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string value,
 		int size
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, size));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, size));
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -168,36 +165,37 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Text));
-		if (value == null)
-			command.Parameters[param].Value = DBNull.Value;
-		else
-			command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Text));
+		if (value == null) {
+			_command.Parameters[param].Value = DBNull.Value;
+		} else {
+			_command.Parameters[param].Value = value;
+		}
 	}
 
 	public void Append (
 		string param,
 		DateTime value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
+		_command.Parameters[param].Value = value;
 	}
 	public void Append (
 		string param,
 		DateTimeOffset value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
+		_command.Parameters[param].Value = value;
 	}
 	public void Append (
 		string param,
 		DateTimeOffset? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTimeOffset));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -205,10 +203,9 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		Guid value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.UniqueIdentifier));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.UniqueIdentifier));
+		_command.Parameters[param].Value = value;
 	}
-
 
 	public void Append (string param, int[] value) {
 		throw new NotImplementedException ();
@@ -263,7 +260,6 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		throw new InvalidOperationException ("Not yet implemented.");
 	}
 
-
 	// 2018-04-04
 	public void Append (
 		string param,
@@ -283,11 +279,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		int? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Int, 4));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Int, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -295,11 +291,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		long? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.BigInt, 8));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.BigInt, 8));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -307,11 +303,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		short? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.SmallInt, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -319,11 +315,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		bool? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Bit, 1));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Bit, 1));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -331,40 +327,41 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		char? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, 1));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Char, 1));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (
 		string param,
-		System.Decimal? value
+		decimal? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (
 		string param,
-		System.Decimal? value,
+		decimal? value,
 		bool isMoney
 	) {
 		if (isMoney) {
-			command.Parameters.Add (new SqlParameter (param, SqlDbType.Money));
+			_command.Parameters.Add (new SqlParameter (param, SqlDbType.Money));
 		} else {
-			command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
+			_command.Parameters.Add (new SqlParameter (param, SqlDbType.Decimal));
 		}
+
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -372,11 +369,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		DateTime? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.DateTime, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -384,11 +381,11 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		string param,
 		Guid? value
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.UniqueIdentifier));
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.UniqueIdentifier));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -397,19 +394,20 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		DataTable value,
 		string udtTypeName
 	) {
-		command.Parameters.Add (new SqlParameter (param, SqlDbType.Structured));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new SqlParameter (param, SqlDbType.Structured));
+		_command.Parameters[param].Value = value;
 		// command.Parameters[param].UdtTypeName = udtTypeName;
-		command.Parameters[param].TypeName = udtTypeName;
+		_command.Parameters[param].TypeName = udtTypeName;
 	}
 
 	public void Return (
 		string param,
 		SqlDbType dbtype
 	) {
-		var p = new SqlParameter (param, dbtype);
-		p.Direction = ParameterDirection.ReturnValue;
-		command.Parameters.Add (p);
+		var p = new SqlParameter (param, dbtype) {
+			Direction = ParameterDirection.ReturnValue
+		};
+		_command.Parameters.Add (p);
 	}
 
 	public void Return (
@@ -417,18 +415,19 @@ public class CommandHelperMssql : ICommandHelper, IDisposable
 		SqlDbType dbtype,
 		int size
 	) {
-		var p = new SqlParameter (param, dbtype, size);
-		p.Direction = ParameterDirection.ReturnValue;
-		command.Parameters.Add (p);
+		var p = new SqlParameter (param, dbtype, size) {
+			Direction = ParameterDirection.ReturnValue
+		};
+		_command.Parameters.Add (p);
 	}
 
-	private string Join (char[] ary) {
-		StringBuilder sb = new StringBuilder (8);
-		for (int i = 0; i < ary.Length; i++) {
-			sb.Append (ary[i]);
-		}
-		return sb.ToString ();
-	}
+	// private string join (char[] ary) {
+	// 	var sb = new StringBuilder (8);
+	// 	for (int i = 0; i < ary.Length; i++) {
+	// 		sb.Append (ary[i]);
+	// 	}
+	// 	return sb.ToString ();
+	// }
 
-	private SqlCommand command;
+	private SqlCommand _command;
 }

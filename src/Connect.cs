@@ -1,3 +1,4 @@
+
 namespace com.janoserdelyi.DataSource;
 
 public class Connect
@@ -12,16 +13,16 @@ public class Connect
 	/*
 
 	*/
-	private string? connectionName { get; set; }
-	private string? query { get; set; }
+	// private string? connectionName { get; set; }
+	// private string? query { get; set; }
 	private Connection connection { get; set; }
 	private Command? command { get; set; }
 
 	public Connect (
 		string connectionName
 	) {
-		this.connectionName = connectionName;
-		this.connection = ConnectionManager.Instance.GetConnection (connectionName, false);
+		// this.connectionName = connectionName;
+		connection = ConnectionManager.Instance.GetConnection (connectionName, false);
 	}
 
 	public Connect (
@@ -33,52 +34,115 @@ public class Connect
 	public Connect Query (
 		string query
 	) {
-		this.query = query;
-		this.command = this.connection.GetCommand (query);
-		this.command.CommandType = CommandType.Text;
+		// this.query = query;
+		command = connection.GetCommand (query);
+		command.CommandType = CommandType.Text;
 		return this;
 	}
 
 	public Connect Procedure (
 		string query
 	) {
-		this.query = query;
-		this.command = this.connection.GetCommand (query);
-		this.command.CommandType = CommandType.StoredProcedure;
+		// this.query = query;
+		command = connection.GetCommand (query);
+		command.CommandType = CommandType.StoredProcedure;
 		return this;
 	}
 
 	public Connect Function (
 		string query
 	) {
-		this.query = query;
-		this.command = this.connection.GetCommand (query);
-		this.command.CommandType = CommandType.StoredProcedure;
+		// this.query = query;
+		command = connection.GetCommand (query);
+		command.CommandType = CommandType.StoredProcedure;
 		return this;
 	}
 
 	public int Go () {
-		ArgumentNullException.ThrowIfNull (this.command);
+		ArgumentNullException.ThrowIfNull (command);
 
-		this.connection.OpenAsync ();
-		using (this.connection) {
-			using (this.command) {
-				return this.command.ExecuteNonQueryAsync ().Result;
+		_ = connection.OpenAsync ();
+		using (connection) {
+			using (command) {
+				return command.ExecuteNonQueryAsync ().Result;
 			}
 		}
 	}
 
-	// i'm considering requiring an interface on this
-	// and likely take a func<> for loading the object
+	// TODO: import Dapper and makes a version of Go like Go<T> ();
+	public T Go<T> () {
+
+		ArgumentNullException.ThrowIfNull (command);
+
+		// we have a few things going on here. how to detect if this is just requesting a primitive and not an object?
+		var ttype = typeof (T);
+		var underlyingType = Nullable.GetUnderlyingType (ttype);
+		var isNullable = false;
+
+		if (underlyingType != null) {
+			// T is nullable. leave it be
+			isNullable = true;
+		} else {
+			// T is not nullable
+			underlyingType = ttype;
+		}
+
+		var isValueType = underlyingType.IsValueType;
+		var isPrimitive = underlyingType.IsPrimitive; // bool's ttype is primitive, but bool? was not, which is why i'm doing these off the underlying type
+		var isString = underlyingType == typeof (string);
+		var isBool = underlyingType == typeof (bool);
+		var isDate = underlyingType == typeof (DateTime) || underlyingType == typeof (DateTimeOffset);
+
+		var isSingularPrimitive = isPrimitive || isString || isBool || isDate;
+
+		if (isSingularPrimitive) {
+			using (connection) {
+				using (command) {
+					using (var dr = command.ExecuteReader ()) {
+						// for primitives, the ordinal will always be the first item
+						if (dr.Read ()) {
+							var val = dr.GetValue (0);
+							if (isDate && ttype == typeof (DateTimeOffset)) {
+								// val will convert to a DateTime but not a DatetimeOffset
+								return (T)(object)new DateTimeOffset ((DateTime)val);
+							}
+
+							return (T)Convert.ChangeType (val, typeof (T));
+						}
+
+						// string is always nullable at runtime
+						if (isNullable || isString) {
+							return default!;
+						}
+
+						throw new Exception ("DataReader did not read");
+					}
+				}
+			}
+		}
+
+		// var result = connection.BaseConnection.Query<T> (
+		// 	command.CommandText
+		// );
+
+		// using (connection) {
+		// 	using (command) {
+		// 		command.BaseCommand.
+		// 	}
+		// }
+
+		return default!;
+	}
+
 	public T Go<T> (
 		Func<com.janoserdelyi.DataSource.Command, T> loadObj
 	) { //where T : new() {
-		ArgumentNullException.ThrowIfNull (this.command);
+		ArgumentNullException.ThrowIfNull (command);
 
-		this.connection.OpenAsync ();
-		using (this.connection) {
-			using (this.command) {
-				return loadObj (this.command);
+		_ = connection.OpenAsync ();
+		using (connection) {
+			using (command) {
+				return loadObj (command);
 			}
 		}
 	}
@@ -87,15 +151,15 @@ public class Connect
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
+		ArgumentNullException.ThrowIfNull (command);
 
 		// for mssql do i want to assume nvarchar for this?
-		if (this.connection.DatabaseType == DatabaseType.MSSQL) {
-			this.command.CH.AppendNvarchar (name, value);
+		if (connection.DatabaseType == DatabaseType.MSSQL) {
+			command.CH.AppendNvarchar (name, value);
 			return this;
 		}
 
-		this.command.CH.Append (name, value);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -120,15 +184,15 @@ public class Connect
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
+		ArgumentNullException.ThrowIfNull (command);
 
 		// for mssql do i want to assume nvarchar for this?
-		if (this.connection.DatabaseType == DatabaseType.MSSQL) {
-			this.command.CH.AppendText (name, value);
+		if (connection.DatabaseType == DatabaseType.MSSQL) {
+			command.CH.AppendText (name, value);
 			return this;
 		}
 
-		this.command.CH.Append (name, value);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -139,8 +203,8 @@ public class Connect
 		int length,
 		bool isReturnValue = false
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value, length);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value, length);
 		return this;
 	}
 
@@ -148,16 +212,16 @@ public class Connect
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.AppendNvarchar (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.AppendNvarchar (name, value);
 		return this;
 	}
 	public Connect AppendVarchar (
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.AppendVarchar (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.AppendVarchar (name, value);
 		return this;
 	}
 
@@ -165,8 +229,8 @@ public class Connect
 		string name,
 		int value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -174,8 +238,8 @@ public class Connect
 		string name,
 		long value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -183,8 +247,8 @@ public class Connect
 		string name,
 		DateTime value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -192,8 +256,8 @@ public class Connect
 		string name,
 		DateTimeOffset value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -201,8 +265,8 @@ public class Connect
 		string name,
 		DateTimeOffset? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -210,8 +274,8 @@ public class Connect
 		string name,
 		short value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -219,8 +283,8 @@ public class Connect
 		string name,
 		bool value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -228,8 +292,8 @@ public class Connect
 		string name,
 		byte value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -237,8 +301,8 @@ public class Connect
 		string name,
 		byte[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -246,8 +310,8 @@ public class Connect
 		string name,
 		TimeSpan value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -255,8 +319,8 @@ public class Connect
 		string name,
 		Guid value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -264,8 +328,8 @@ public class Connect
 		string name,
 		string[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -273,8 +337,8 @@ public class Connect
 		string name,
 		int[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -282,8 +346,8 @@ public class Connect
 		string name,
 		int[,] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -291,8 +355,8 @@ public class Connect
 		string name,
 		long[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -300,8 +364,8 @@ public class Connect
 		string name,
 		double[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -309,8 +373,8 @@ public class Connect
 		string name,
 		DateTime[] value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -318,8 +382,8 @@ public class Connect
 		string name,
 		System.Net.IPAddress value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -327,8 +391,8 @@ public class Connect
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.AppendJson (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.AppendJson (name, value);
 		return this;
 	}
 
@@ -336,8 +400,8 @@ public class Connect
 		string name,
 		string value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.AppendJsonb (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.AppendJsonb (name, value);
 		return this;
 	}
 
@@ -345,8 +409,8 @@ public class Connect
 		string name,
 		int? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -354,8 +418,8 @@ public class Connect
 		string name,
 		long? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -363,8 +427,8 @@ public class Connect
 		string name,
 		DateTime? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -372,8 +436,8 @@ public class Connect
 		string name,
 		Guid? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -381,8 +445,8 @@ public class Connect
 		string name,
 		decimal? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -390,8 +454,8 @@ public class Connect
 		string name,
 		short? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -399,8 +463,8 @@ public class Connect
 		string name,
 		bool? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -408,8 +472,8 @@ public class Connect
 		string name,
 		byte? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -417,8 +481,8 @@ public class Connect
 		string name,
 		char? value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -426,8 +490,8 @@ public class Connect
 		string name,
 		System.Collections.BitArray value
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value);
 		return this;
 	}
 
@@ -436,8 +500,8 @@ public class Connect
 		System.Collections.BitArray value,
 		int size
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value, size);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value, size);
 		return this;
 	}
 
@@ -446,8 +510,8 @@ public class Connect
 		DataTable value,
 		string udtTypeName
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Append (name, value, udtTypeName);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Append (name, value, udtTypeName);
 		return this;
 	}
 
@@ -455,8 +519,8 @@ public class Connect
 		string param,
 		SqlDbType dbtype
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Return (param, dbtype);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Return (param, dbtype);
 		return this;
 	}
 
@@ -465,9 +529,8 @@ public class Connect
 		SqlDbType dbtype,
 		int size
 	) {
-		ArgumentNullException.ThrowIfNull (this.command);
-		this.command.CH.Return (param, dbtype, size);
+		ArgumentNullException.ThrowIfNull (command);
+		command.CH.Return (param, dbtype, size);
 		return this;
 	}
-
 }

@@ -1,7 +1,5 @@
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Xml;
-using System.IO;
 
 namespace com.janoserdelyi.DataSource;
 
@@ -9,40 +7,29 @@ public class ConnectionManager
 {
 
 	private ConnectionManager () {
-		connections = new ConcurrentDictionary<string, ConnectionPropertyBag> ();
-		instanceCreateDate = DateTime.Now;
+		_connections = new ConcurrentDictionary<string, ConnectionPropertyBag> ();
+		InstanceCreateDate = DateTime.Now;
 	}
 
 	public Connection GetConnection (
 		string name,
 		bool returnOpenConnection = true
 	) {
-		ArgumentNullException.ThrowIfNullOrEmpty (name);
+		ArgumentException.ThrowIfNullOrEmpty (name);
 
-		if (!connections.TryGetValue (name, out ConnectionPropertyBag? value)) {
+		if (!_connections.TryGetValue (name, out ConnectionPropertyBag? value)) {
 			throw new ArgumentException ($"'{name}' is not a valid Connection name. This is case-sensitive.");
 		}
 
-		DbConnection? connection;
-
-		switch (value.DatabaseType) {
-			case DatabaseType.MSSQL:
+		DbConnection?
 				//throw new NotSupportedException ("MSSQL removed");
-				connection = new Microsoft.Data.SqlClient.SqlConnection (value.ToString ());
-				break;
-			case DatabaseType.Postgresql:
-				connection = new Npgsql.NpgsqlConnection (value.ToString ());
-				break;
-			case DatabaseType.MySql:
-				connection = new MySqlConnector.MySqlConnection (value.ToString ());
-				//connection = new MySql.Data.MySqlClient.MySqlConnection (connections[name].ToString ());
-				break;
-			case DatabaseType.Sqlite:
-				throw new NotSupportedException ("Sqlite is not yet supported");
-			default:
-				throw new ArgumentException ("Unknown database type. Not defaulting to anything.");
-		}
-
+				connection = value.DatabaseType switch {
+					DatabaseType.MSSQL => new Microsoft.Data.SqlClient.SqlConnection (value.ToString ()),//throw new NotSupportedException ("MSSQL removed");
+					DatabaseType.Postgresql => new Npgsql.NpgsqlConnection (value.ToString ()),
+					DatabaseType.MySql => new MySqlConnector.MySqlConnection (value.ToString ()),
+					DatabaseType.Sqlite => throw new NotSupportedException ("Sqlite is not yet supported"),
+					_ => throw new ArgumentException ("Unknown database type. Not defaulting to anything."),
+				};
 		var c = new Connection (connection, value);
 
 		if (returnOpenConnection) {
@@ -52,14 +39,13 @@ public class ConnectionManager
 		return c;
 	}
 
-
 	#region public properties
 	public static ConnectionManager Instance {
 		get {
-			if (instance == null) {
-				instance = new ConnectionManager ();
+			if (_instance == null) {
+				_instance = new ConnectionManager ();
 				try {
-					instance.initialize ();
+					_instance.initialize ();
 				} catch (MissingConfigurationException) {
 					throw;
 				} catch (MalformedConfigurationException) {
@@ -69,24 +55,22 @@ public class ConnectionManager
 				}
 			}
 
-			return instance;
+			return _instance;
 		}
 	}
 
 	public IDictionary<string, ConnectionPropertyBag> Connections {
 		get {
 			//i've hit cases where this get called before initialize. so check!
-			if (instance == null) {
-				var caller = ConnectionManager.Instance; //just call the get
+			if (_instance == null) {
+				_ = Instance; //just call the getter
 			}
 
-			return connections;
+			return _connections;
 		}
 	}
 
-	public DateTime InstanceCreateDate {
-		get { return instanceCreateDate; }
-	}
+	public DateTime InstanceCreateDate { get; }
 	#endregion
 
 	// 2018-11-13 how do i not have this yet? will make testing easier
@@ -96,12 +80,12 @@ public class ConnectionManager
 		ArgumentNullException.ThrowIfNull (bag);
 		ArgumentNullException.ThrowIfNull (bag.Name);
 
-		if (instance == null) {
+		if (_instance == null) {
 			throw new NullReferenceException ("'instance' is null somehow. what kind of database are you adding a connection to?");
 		}
 
 		// could do some error-checking for required properties, but eh. you don't add you get to live with it
-		instance.connections.GetOrAdd (bag.Name, bag);
+		_instance._connections.GetOrAdd (bag.Name, bag);
 	}
 
 	#region private methods
@@ -110,7 +94,7 @@ public class ConnectionManager
 	) {
 		// TODO: put a filesystemwatcher on the config file and reload if it changes
 
-		XmlDocument config = new XmlDocument ();
+		var config = new XmlDocument ();
 		try {
 			config.Load (Path.Combine (AppDomain.CurrentDomain.BaseDirectory, "DataSource.config"));
 		} catch (FileNotFoundException) { // oops) {
@@ -138,8 +122,10 @@ public class ConnectionManager
 					System.Diagnostics.Debug.WriteLine ($"Unable to get parent directory for folder '{rootFolder}'");
 					return;
 				}
+
 				rootFolder = di.Parent.FullName;
 			}
+
 			bool loaded = false;
 			try {
 				config.Load (Path.Combine (rootFolder, "DataSource.config"));
@@ -148,10 +134,10 @@ public class ConnectionManager
 				System.Diagnostics.Debug.WriteLine ($"Unable to locate DataSource.config at '{rootFolder}'");
 				return;
 			}
+
 			if (!loaded) {
 				return;
 			}
-
 		} catch (Exception oops) {
 			throw new MalformedConfigurationException ("Error in DataSource.config : " + oops.Message, oops);
 		}
@@ -171,26 +157,13 @@ public class ConnectionManager
 				throw new ArgumentException ("Unknown database type in config.");
 			}
 
-			DatabaseType databaseType;
-			switch (dbtype.ToLower ()) {
-				case "postgresql":
-					databaseType = DatabaseType.Postgresql;
-					break;
-				case "mssql":
-					databaseType = DatabaseType.MSSQL;
-					break;
-				case "mysql":
-					databaseType = DatabaseType.MySql;
-					break;
-				//throw new NotSupportedException("MySql is not yet supported");
-				case "sqlite":
-					//databaseType = DatabaseType.Sqlite;
-					//break;
-					throw new NotSupportedException ("Sqlite is not yet supported");
-				default:
-					throw new ArgumentException ("Unknown database type. Not defaulting to anything.");
-			}
-
+			var databaseType = dbtype.ToLower () switch {
+				"postgresql" => DatabaseType.Postgresql,
+				"mssql" => DatabaseType.MSSQL,
+				"mysql" => DatabaseType.MySql,
+				"sqlite" => throw new NotSupportedException ("Sqlite is not yet supported"),//databaseType = DatabaseType.Sqlite;
+				_ => throw new ArgumentException ("Unknown database type. Not defaulting to anything."),
+			};
 			connectionPropertyBag.DatabaseType = databaseType;
 			connectionPropertyBag.Name = connectionNode.SelectSingleNode ("name")!.InnerText;
 			connectionPropertyBag.Server = connectionNode.SelectSingleNode ("server")!.InnerText;
@@ -204,29 +177,37 @@ public class ConnectionManager
 					connectionPropertyBag.MaxPoolSize = maxpool.ToString ();
 				}
 			}
+
 			if (connectionNode.SelectSingleNode ("minpoolsize") != null) {
 				if (int.TryParse (connectionNode.SelectSingleNode ("minpoolsize")?.InnerText, out int minpool)) {
 					connectionPropertyBag.MinPoolSize = minpool.ToString ();
 				}
 			}
+
 			if (connectionNode.SelectSingleNode ("encoding") != null) {
 				connectionPropertyBag.Encoding = connectionNode.SelectSingleNode ("encoding")?.InnerText;
 			}
+
 			if (connectionNode.SelectSingleNode ("timeout") != null) {
 				connectionPropertyBag.Timeout = connectionNode.SelectSingleNode ("timeout")?.InnerText;
 			}
+
 			if (connectionNode.SelectSingleNode ("commandtimeout") != null) {
 				connectionPropertyBag.CommandTimeout = connectionNode.SelectSingleNode ("commandtimeout")?.InnerText;
 			}
+
 			if (connectionNode.SelectSingleNode ("applicationname") != null) {
 				connectionPropertyBag.ApplicationName = connectionNode.SelectSingleNode ("applicationname")?.InnerText;
 			}
+
 			if (connectionNode.SelectSingleNode ("encrypt") != null) {
-				connectionPropertyBag.Encrypt = Boolean.Parse (connectionNode.SelectSingleNode ("encrypt")?.InnerText!);
+				connectionPropertyBag.Encrypt = bool.Parse (connectionNode.SelectSingleNode ("encrypt")?.InnerText!);
 			}
+
 			if (connectionNode.SelectSingleNode ("trustedconnection") != null) {
-				connectionPropertyBag.TrustedConnection = Boolean.Parse (connectionNode.SelectSingleNode ("trustedconnection")?.InnerText!);
+				connectionPropertyBag.TrustedConnection = bool.Parse (connectionNode.SelectSingleNode ("trustedconnection")?.InnerText!);
 			}
+
 			if (connectionNode.SelectSingleNode ("integratedsecurity") != null) {
 				connectionPropertyBag.IntegratedSecurity = connectionNode.SelectSingleNode ("integratedsecurity")?.InnerText!;
 			}
@@ -234,17 +215,16 @@ public class ConnectionManager
 			// i'm not changing the value if it exists, so i'm just passing in a Func that gets me the value i want in the first place
 			// instance.connections.AddOrUpdate(connectionPropertyBag.Name, connectionPropertyBag, (key, oldValue) => connectionPropertyBag);
 			// the name of this isn't intuitive for what i want but functionally it matches more closely
-			if (instance == null) {
+			if (_instance == null) {
 				throw new NullReferenceException ("'instance' is null somehow. what kind of database are you adding a connection to?");
 			}
 
-			instance.connections.GetOrAdd (connectionPropertyBag.Name, connectionPropertyBag);
+			_instance._connections.GetOrAdd (connectionPropertyBag.Name, connectionPropertyBag);
 		}
 	}
 	#endregion
 
-	private static ConnectionManager? instance;
-	private readonly ConcurrentDictionary<string, com.janoserdelyi.DataSource.ConnectionPropertyBag> connections = new (); //keyed by Name
-	private readonly DateTime instanceCreateDate;
+	private static ConnectionManager? _instance;
+	private readonly ConcurrentDictionary<string, com.janoserdelyi.DataSource.ConnectionPropertyBag> _connections = new (); //keyed by Name
 
 }
