@@ -1,4 +1,3 @@
-using System.Data;
 using com.janoserdelyi.DataSource;
 
 namespace UnitTests;
@@ -10,7 +9,6 @@ public class TestRecord
 	public required string Name { get; set; }
 	public required long BigNumber { get; set; }
 	public required short SmallNumber { get; set; }
-	public required byte SingleByte { get; set; }
 	public required byte[] Bytes { get; set; }
 	public required string Charv { get; set; } // varchar - not testing in postgresql
 	public required string Charnv { get; set; } // nvarchar - not testing in postgresql
@@ -28,7 +26,6 @@ public class TestRecord
 			Name = cmd.DRH.GetString ("name"),
 			BigNumber = cmd.DRH.GetLong ("big_number"),
 			SmallNumber = cmd.DRH.GetShort ("small_number"),
-			SingleByte = cmd.DRH.GetByte ("single_byte"),
 			Bytes = cmd.DRH.GetByteArray ("bytes", 1024),
 			Charv = cmd.DRH.GetString ("charv"),
 			Charnv = cmd.DRH.GetString ("charnv"),
@@ -44,6 +41,7 @@ public class TestRecord
 			if (dr.Read ()) {
 				return loadObj (cmd);
 			}
+
 			return null;
 		}
 	}
@@ -56,6 +54,7 @@ public class TestRecord
 			while (dr.Read ()) {
 				rets.Add (loadObj (cmd));
 			}
+
 			return rets;
 		}
 	}

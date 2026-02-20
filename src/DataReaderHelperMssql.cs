@@ -1,4 +1,4 @@
-﻿using Microsoft.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace com.janoserdelyi.DataSource;
 
@@ -9,14 +9,14 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 	}
 
 	public DbDataReader? DataReader {
-		get { return dr; }
-		set { dr = (SqlDataReader)value!; }
+		get { return _dr; }
+		set { _dr = (SqlDataReader)value!; }
 	}
 
 	public void Dispose () {
-		if (dr != null) {
-			dr.Close ();
-			dr.Dispose ();
+		if (_dr != null) {
+			_dr.Close ();
+			_dr.Dispose ();
 		}
 	}
 
@@ -25,74 +25,78 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 	}
 
 	public int GetInt (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetInt32 (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetInt32 (ord);
 	}
 	public int? GetInt (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetInt32 (ord);
+
+		return _dr.GetInt32 (ord);
 	}
 
 	public long GetLong (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetInt64 (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetInt64 (ord);
 	}
 	public long? GetLong (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetInt64 (ord);
+
+		return _dr.GetInt64 (ord);
 	}
 	public long GetInt64 (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetInt64 (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetInt64 (ord);
 	}
 	public long? GetInt64 (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetInt64 (ord);
+
+		return _dr.GetInt64 (ord);
 	}
 
 	public short GetShort (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetInt16 (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetInt16 (ord);
 	}
 	public short? GetShort (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetInt16 (ord);
+
+		return _dr.GetInt16 (ord);
 	}
 
 	public byte GetByte (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
+		var ord = _dr.GetOrdinal (column);
 
-		var len = dr.GetBytes (ord, 0, null, 0, 1);
+		var len = _dr.GetBytes (ord, 0, null, 0, 1);
 
 		if (len < 1) {
 			Exception? oops = null;
@@ -107,32 +111,33 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 		// this appears to be potentially returning more than one byte. so get a byte array and return the first element. using dr.GetByte(ord)
 
 		byte[] buf = new byte[1];
-		dr.GetBytes (ord, 0, buf, 0, 1);
+		_dr.GetBytes (ord, 0, buf, 0, 1);
 		return buf[0];
 	}
 	public byte? GetByte (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetByte (ord);
+
+		return _dr.GetByte (ord);
 	}
 
 	public byte[] GetByteArray (
 		string column,
 		int length
 	) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
+		var ord = _dr.GetOrdinal (column);
 
-		var len = dr.GetBytes (ord, 0, null, 0, length);
+		// var len = _dr.GetBytes (ord, 0, null, 0, length);
 
 		byte[] buf = new byte[length];
 
-		dr.GetBytes (ord, 0, buf, 0, length);
+		_dr.GetBytes (ord, 0, buf, 0, length);
 		return buf;
 	}
 	public byte[]? GetByteArray (
@@ -140,47 +145,50 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 		int length,
 		bool isNullable
 	) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
+
 		byte[] buf = new byte[length];
-		dr.GetBytes (ord, 0, buf, 0, length);
+		_dr.GetBytes (ord, 0, buf, 0, length);
 		return buf;
 	}
 
 	public bool GetBool (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetBoolean (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetBoolean (ord);
 	}
 	public bool? GetBool (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetBoolean (ord);
+
+		return _dr.GetBoolean (ord);
 	}
 
 	public decimal GetDecimal (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetDecimal (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetDecimal (ord);
 	}
 	public decimal? GetDecimal (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetDecimal (ord);
+
+		return _dr.GetDecimal (ord);
 	}
 
 	public double GetDouble (string column) {
@@ -191,51 +199,54 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 	}
 
 	public string GetString (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetString (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetString (ord);
 	}
 	public string? GetString (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetString (ord);
+
+		return _dr.GetString (ord);
 	}
 
 	public DateTime GetDateTime (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetDateTime (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetDateTime (ord);
 	}
 	public DateTime? GetDateTime (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetDateTime (ord);
+
+		return _dr.GetDateTime (ord);
 	}
 
 	public DateTimeOffset GetDateTimeOffset (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetDateTimeOffset (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetDateTimeOffset (ord);
 	}
 	public DateTimeOffset? GetDateTimeOffset (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetDateTimeOffset (ord);
+
+		return _dr.GetDateTimeOffset (ord);
 	}
 
 	public TimeSpan GetTimeSpan (string column) {
@@ -246,77 +257,84 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 	}
 
 	public Guid GetGuid (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return dr.GetGuid (ord);
+		var ord = _dr.GetOrdinal (column);
+		return _dr.GetGuid (ord);
 	}
 	public Guid? GetGuid (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return dr.GetGuid (ord);
+
+		return _dr.GetGuid (ord);
 	}
 
 	//2011-11-25 janos
 	//NOTE: really here for postgresql. these would probably explode if used with mssql
 	public int[]? GetIntArray (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (int[])dr.GetValue (ord);
+
+		return (int[])_dr.GetValue (ord);
 	}
 	public int[,]? GetIntArray2D (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (int[,])dr.GetValue (ord);
+
+		return (int[,])_dr.GetValue (ord);
 	}
 
 	public long[]? GetLongArray (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (long[])dr.GetValue (ord);
+
+		return (long[])_dr.GetValue (ord);
 	}
 	public double[]? GetDoubleArray (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (double[])dr.GetValue (ord);
+
+		return (double[])_dr.GetValue (ord);
 	}
 	public DateTime[]? GetDateTimeArray (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (DateTime[])dr.GetValue (ord);
+
+		return (DateTime[])_dr.GetValue (ord);
 	}
 	public string[]? GetStringArray (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		if (dr.IsDBNull (ord)) {
+		var ord = _dr.GetOrdinal (column);
+		if (_dr.IsDBNull (ord)) {
 			return null;
 		}
-		return (string[])dr.GetValue (ord);
+
+		return (string[])_dr.GetValue (ord);
 	}
 
 	public string GetInet (string column) {
@@ -327,17 +345,18 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 	}
 	// 2016-06-28.
 	public System.Net.IPAddress GetIpAddress (string column) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		var ord = dr.GetOrdinal (column);
-		return System.Net.IPAddress.Parse (dr.GetValue (ord).ToString ()!);
+		var ord = _dr.GetOrdinal (column);
+		return System.Net.IPAddress.Parse (_dr.GetValue (ord).ToString ()!);
 	}
 	public System.Net.IPAddress? GetIpAddress (string column, bool isNullable) {
-		ArgumentNullException.ThrowIfNull (dr);
+		ArgumentNullException.ThrowIfNull (_dr);
 
-		if (!System.Net.IPAddress.TryParse (dr.GetValue (dr.GetOrdinal (column)).ToString (), out System.Net.IPAddress? addr)) {
+		if (!System.Net.IPAddress.TryParse (_dr.GetValue (_dr.GetOrdinal (column)).ToString (), out System.Net.IPAddress? addr)) {
 			return null;
 		}
+
 		return addr;
 	}
 
@@ -366,6 +385,6 @@ public class DataReaderHelperMssql : IDataReaderHelper, IDisposable
 		throw new InvalidOperationException ("GetRegconfig is not yet implemented for MSSQL");
 	}
 
-	private SqlDataReader? dr;
+	private SqlDataReader? _dr;
 }
 

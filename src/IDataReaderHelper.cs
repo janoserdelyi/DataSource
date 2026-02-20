@@ -32,7 +32,6 @@ public interface IDataReaderHelper : IDisposable
 	byte[] GetByteArray (string column, int length);
 	byte[]? GetByteArray (string column, int length, bool isNullable);
 
-
 	//
 	bool GetBool (string column);
 	bool? GetBool (string column, bool isNullable);

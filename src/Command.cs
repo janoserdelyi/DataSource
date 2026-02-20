@@ -1,3 +1,5 @@
+using System.Diagnostics.CodeAnalysis;
+
 namespace com.janoserdelyi.DataSource;
 
 public class Command : DbCommand, IDisposable
@@ -11,61 +13,61 @@ public class Command : DbCommand, IDisposable
 			throw new System.ArgumentNullException ("commandText");
 		}
 
-		this.connection = connection;
-		this.baseCommand = connection.GetDbCommand (commandText);
-		this.commandHelper = connection.GetCommandHelper ();
-		this.commandHelper.Command = this.baseCommand;
+		_connection = connection;
+		BaseCommand = connection.getDbCommand (commandText);
+		CH = connection.GetCommandHelper ();
+		CH.Command = BaseCommand;
 	}
 
-
-	public override string? CommandText {
+	[AllowNull]
+	public override string CommandText {
 		get {
-			ArgumentNullException.ThrowIfNull (this.baseCommand);
-			ArgumentNullException.ThrowIfNull (this.baseCommand.CommandText);
-			return this.baseCommand.CommandText;
+			ArgumentNullException.ThrowIfNull (BaseCommand);
+			ArgumentNullException.ThrowIfNull (BaseCommand.CommandText);
+			return BaseCommand.CommandText;
 		}
 		set {
-			this.baseCommand.CommandText = value;
+			BaseCommand.CommandText = value ?? "";
 		}
 	}
 
 	public override int CommandTimeout {
 		get {
-			return this.baseCommand.CommandTimeout;
+			return BaseCommand.CommandTimeout;
 		}
 		set {
-			this.baseCommand.CommandTimeout = value;
+			BaseCommand.CommandTimeout = value;
 		}
 	}
 
 	public override CommandType CommandType {
 		get {
-			return this.baseCommand.CommandType;
+			return BaseCommand.CommandType;
 		}
 		set {
-			this.baseCommand.CommandType = value;
+			BaseCommand.CommandType = value;
 		}
 	}
 
 	protected override DbConnection? DbConnection {
 		get {
-			return this.connection;
+			return _connection;
 		}
 		set {
-			this.baseCommand.Connection = value;
+			BaseCommand.Connection = value;
 		}
 	}
 
 	public override int ExecuteNonQuery () {
-		return this.baseCommand.ExecuteNonQuery ();
+		return BaseCommand.ExecuteNonQuery ();
 	}
 
 	public override object? ExecuteScalar () {
-		return this.baseCommand.ExecuteScalar ();
+		return BaseCommand.ExecuteScalar ();
 	}
 
 	public override void Prepare () {
-		this.baseCommand.Prepare ();
+		BaseCommand.Prepare ();
 	}
 
 	protected override DbDataReader ExecuteDbDataReader (CommandBehavior behavior) {
@@ -77,34 +79,30 @@ public class Command : DbCommand, IDisposable
 	}
 
 	public override void Cancel () {
-		this.baseCommand.Cancel ();
+		BaseCommand.Cancel ();
 	}
 
 	public override UpdateRowSource UpdatedRowSource {
 		get {
-			return this.baseCommand.UpdatedRowSource;
+			return BaseCommand.UpdatedRowSource;
 		}
 		set {
-			this.baseCommand.UpdatedRowSource = value;
+			BaseCommand.UpdatedRowSource = value;
 		}
 	}
 
 	public override bool DesignTimeVisible {
 		get {
-			return this.baseCommand.DesignTimeVisible;
+			return BaseCommand.DesignTimeVisible;
 		}
 		set {
-			this.baseCommand.DesignTimeVisible = value;
+			BaseCommand.DesignTimeVisible = value;
 		}
 	}
 
 	protected override DbTransaction? DbTransaction {
-		get {
-			throw new NotImplementedException ();
-		}
-		set {
-			throw new NotImplementedException ();
-		}
+		get => throw new NotImplementedException ();
+		set => throw new NotImplementedException ();
 	}
 
 	protected override DbParameterCollection DbParameterCollection {
@@ -115,59 +113,38 @@ public class Command : DbCommand, IDisposable
 
 	public new DbDataReader ExecuteReader () {
 
-		//this will automatically generate a DataReaderHelper as well
-		switch (this.connection.DatabaseType) {
-			case DatabaseType.MSSQL:
-				//throw new NotSupportedException ("MSSQL removed");
-				this.dataReaderHelper = new DataReaderHelperMssql ();
-				break;
-			case DatabaseType.Postgresql:
-				this.dataReaderHelper = new DataReaderHelperPostgresql ();
-				break;
-			case DatabaseType.MySql:
-				this.dataReaderHelper = new DataReaderHelperMysql ();
-				break;
-			default:
-				throw new Exception ("Error finding command helper. '" + this.connection.DatabaseType.ToString () + "' is not a currently supported database");
+		if (_connection.State != ConnectionState.Open) {
+			_connection.Open ();
 		}
 
-		DbDataReader dr = this.baseCommand.ExecuteReader ();
-		this.dataReaderHelper.DataReader = dr;
+		//this will automatically generate a DataReaderHelper as well
+		DRH = _connection.DatabaseType switch {
+			DatabaseType.MSSQL => new DataReaderHelperMssql (),//throw new NotSupportedException ("MSSQL removed");
+			DatabaseType.Postgresql => new DataReaderHelperPostgresql (),
+			DatabaseType.MySql => new DataReaderHelperMysql (),
+			_ => throw new Exception ("Error finding command helper. '" + _connection.DatabaseType.ToString () + "' is not a currently supported database"),
+		};
+		DbDataReader dr = BaseCommand.ExecuteReader ();
+		DRH.DataReader = dr;
 		return dr;
 	}
 
-
-	public DbCommand BaseCommand {
-		get { return baseCommand; }
-		set { baseCommand = value; }
-	}
+	public DbCommand BaseCommand { get; set; }
 
 	public ICommandHelper CommandHelper {
-		get { return commandHelper; }
+		get { return CH; }
 	}
-	public ICommandHelper CH {
-		get { return commandHelper; }
-	}
+	public ICommandHelper CH { get; }
 
 	public IDataReaderHelper? DataReaderHelper {
-		get { return dataReaderHelper; }
+		get { return DRH; }
 	}
-	public IDataReaderHelper? DRH {
-		get { return dataReaderHelper; }
-	}
+	public IDataReaderHelper? DRH { get; private set; }
 
 	public new void Dispose () {
-		if (dataReaderHelper != null) {
-			dataReaderHelper.Dispose ();
-		}
-		if (baseCommand != null) {
-			baseCommand.Dispose ();
-		}
+		DRH?.Dispose ();
+		BaseCommand?.Dispose ();
 	}
 
-	private readonly Connection connection;
-	private DbCommand baseCommand;
-	private readonly ICommandHelper commandHelper;
-	private IDataReaderHelper? dataReaderHelper;
-
+	private readonly Connection _connection;
 }

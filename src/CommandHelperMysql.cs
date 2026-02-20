@@ -9,7 +9,7 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 {
 	///<summary>Constructor for CommandHelper</summary>
 	public CommandHelperMysql () {
-		command = new MySqlCommand ();
+		_command = new MySqlCommand ();
 	}
 	/*
 	public IDbCommand Command {
@@ -17,15 +17,12 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 	}
 	*/
 	public DbCommand Command {
-		set { command = (MySqlCommand)value; }
+		set { _command = (MySqlCommand)value; }
 	}
 
 	//added 2008 01 09 janos erdelyi - to allow for IDisposable
 	public void Dispose () {
-		if (command != null) {
-			command.Cancel ();
-			//command.Dispose();
-		}
+		_command?.Cancel ();
 	}
 
 	#region Regular Types
@@ -39,8 +36,8 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		int value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int32, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int32, 4));
+		_command.Parameters[param].Value = value;
 	}
 
 	/// <summary></summary>
@@ -52,8 +49,8 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		long value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int64, 8));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int64, 8));
+		_command.Parameters[param].Value = value;
 	}
 
 	/*
@@ -69,32 +66,32 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		double value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Double));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Double));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		short value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int16, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int16, 4));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		byte value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Byte));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, DbType.Byte));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void Append (
 		string param,
 		byte[] value
 	) {
-		command.Parameters.Add (new Npgsql.NpgsqlParameter (param, SqlDbType.VarBinary));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new Npgsql.NpgsqlParameter (param, SqlDbType.VarBinary));
+		_command.Parameters[param].Value = value;
 	}
 
 	/// // HOLY CRAP it's the year 2015 and no boolean in mysql?
@@ -112,21 +109,21 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		char value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, 1));
-		command.Parameters[param].Value = value.ToString ();
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, 1));
+		_command.Parameters[param].Value = value.ToString ();
 	}
 
 	public void Append (
 		string param,
-		System.Decimal value
+		decimal value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Decimal));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, DbType.Decimal));
+		_command.Parameters[param].Value = value;
 	}
 
 	public void AppendNumeric (
 		string param,
-		System.Decimal value
+		decimal value
 	) {
 		throw new InvalidOperationException ("Not implemented. Append a decimal instead.");
 	}
@@ -136,11 +133,11 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string value,
 		int size
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, size));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, size));
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -148,11 +145,11 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String)); // leaving size out. documents suggest it is inferred from the actual data sent
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String)); // leaving size out. documents suggest it is inferred from the actual data sent
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -160,11 +157,11 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.VarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.VarChar)); // leaving size out. documents suggest it is inferred from the actual data sent
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 
@@ -173,22 +170,23 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string value,
 		int size
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, size));
-		if (value == null)
-			command.Parameters[param].Value = DBNull.Value;
-		else
-			command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, size));
+		if (value == null) {
+			_command.Parameters[param].Value = DBNull.Value;
+		} else {
+			_command.Parameters[param].Value = value;
+		}
 	}
 
 	public void AppendText (
 		string param,
 		string value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, value));
+		_command.Parameters.Add (new MySqlParameter (param, value));
 		if (value == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = value;
+			_command.Parameters[param].Value = value;
 		}
 	}
 	// 2011-06-13 janos.
@@ -197,11 +195,11 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		string val
 	) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.String));
+		_command.Parameters.Add (new MySqlParameter (param, DbType.String));
 		if (val == null) {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		} else {
-			command.Parameters[param].Value = val;
+			_command.Parameters[param].Value = val;
 		}
 	}
 
@@ -209,8 +207,8 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		DateTime value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
+		_command.Parameters[param].Value = value;
 	}
 	public void Append (
 		string param,
@@ -229,8 +227,8 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		Guid value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Guid));
-		command.Parameters[param].Value = value;
+		_command.Parameters.Add (new MySqlParameter (param, DbType.Guid));
+		_command.Parameters[param].Value = value;
 	}
 
 	//added by harv
@@ -306,11 +304,11 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		int? value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int32, 4));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int32, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -318,29 +316,29 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		string param,
 		long? value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int64, 8));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int64, 8));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (string param, short? value) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int16, 4));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.Int16, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (string param, byte? value) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Byte));
+		_command.Parameters.Add (new MySqlParameter (param, DbType.Byte));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -357,45 +355,46 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 	}
 
 	public void Append (string param, char? value) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, 1));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.String, 1));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (
 		string param,
-		System.Decimal? value
+		decimal? value
 	) {
-		command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Decimal));
+		_command.Parameters.Add (new MySqlParameter (param, DbType.Decimal));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
-	public void Append (string param, System.Decimal? value, bool isMoney) {
+	public void Append (string param, decimal? value, bool isMoney) {
 		if (isMoney) { //TODO:investigate how this impacts postrgres. this is a carryover from MSSQL
-			command.Parameters.Add (new MySqlParameter (param, System.Data.SqlDbType.Money));
+			_command.Parameters.Add (new MySqlParameter (param, SqlDbType.Money));
 		} else {
-			command.Parameters.Add (new MySqlParameter (param, System.Data.DbType.Decimal));
+			_command.Parameters.Add (new MySqlParameter (param, DbType.Decimal));
 		}
+
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
 	public void Append (string param, DateTime? value) {
-		command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
+		_command.Parameters.Add (new MySqlParameter (param, MySqlDbType.DateTime, 4));
 		if (value.HasValue) {
-			command.Parameters[param].Value = value.Value;
+			_command.Parameters[param].Value = value.Value;
 		} else {
-			command.Parameters[param].Value = DBNull.Value;
+			_command.Parameters[param].Value = DBNull.Value;
 		}
 	}
 
@@ -416,14 +415,14 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 	}
 	#endregion
 
-
 	public void Return (
 		string param,
 		SqlDbType dbtype
 	) {
-		var p = new MySqlParameter (param, dbtype);
-		p.Direction = ParameterDirection.ReturnValue;
-		command.Parameters.Add (p);
+		var p = new MySqlParameter (param, dbtype) {
+			Direction = ParameterDirection.ReturnValue
+		};
+		_command.Parameters.Add (p);
 	}
 
 	public void Return (
@@ -437,5 +436,5 @@ public class CommandHelperMysql : ICommandHelper, IDisposable
 		// command.Parameters.Add (p);
 	}
 
-	private MySqlCommand command;
+	private MySqlCommand _command;
 }

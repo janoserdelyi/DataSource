@@ -1,39 +1,41 @@
-﻿using System;
-using System.Data;
+using System;
+// using System.Data;
 using com.janoserdelyi.DataSource;
 
 namespace test;
 
-class Program
+public class Program
 {
 
-	private static string? getString (
-		Command cmd
-	) {
-		using (IDataReader dr = cmd.ExecuteReader ()) {
-			ArgumentNullException.ThrowIfNull (cmd.DRH);
-			string? ret = null;
-			if (dr.Read ()) {
-				return cmd.DRH.GetString ("a_string");
-			}
-			return ret;
-		}
-	}
+	// private static string? getString (
+	// 	Command cmd
+	// ) {
+	// 	using (IDataReader dr = cmd.ExecuteReader ()) {
+	// 		ArgumentNullException.ThrowIfNull (cmd.DRH);
+	// 		string? ret = null;
+	// 		if (dr.Read ()) {
+	// 			return cmd.DRH.GetString ("a_string");
+	// 		}
+	// 		return ret;
+	// 	}
+	// }
 
-	private static string? getRegconfig (
-		Command cmd
-	) {
-		using (IDataReader dr = cmd.ExecuteReader ()) {
-			ArgumentNullException.ThrowIfNull (cmd.DRH);
-			string? ret = null;
-			if (dr.Read ()) {
-				return cmd.DRH.GetRegconfig ("reg");
-			}
-			return ret;
-		}
-	}
+	// private static string? getRegconfig (
+	// 	Command cmd
+	// ) {
+	// 	using (IDataReader dr = cmd.ExecuteReader ()) {
+	// 		ArgumentNullException.ThrowIfNull (cmd.DRH);
+	// 		string? ret = null;
+	// 		if (dr.Read ()) {
+	// 			return cmd.DRH.GetRegconfig ("reg");
+	// 		}
+	// 		return ret;
+	// 	}
+	// }
 
-	static void Main (string[] args) {
+	public static void Main (
+
+	) {
 		Console.WriteLine ("Hello World!");
 
 		// 2024-10-29 here we are nearly a year later :)
@@ -47,18 +49,18 @@ class Program
 		// 	CommandTimeout = "60"
 		// };
 
-		var mssqlBag = new ConnectionPropertyBag () {
-			DatabaseType = DatabaseType.MSSQL,
-			Name = "MarketingSupport",
-			Server = "CS01SQLPTSM631.usweb.costar.local\\MKTSUPPORT",
-			Database = "MarketingSupport",
-			IntegratedSecurity = "SSPI",
-			//TrustedConnection = true,
-			Encrypt = false,
-			CommandTimeout = "60"
-		};
+		// var mssqlBag = new ConnectionPropertyBag () {
+		// 	DatabaseType = DatabaseType.MSSQL,
+		// 	Name = "MarketingSupport",
+		// 	Server = "CS01SQLPTSM631.usweb.costar.local\\MKTSUPPORT",
+		// 	Database = "MarketingSupport",
+		// 	IntegratedSecurity = "SSPI",
+		// 	//TrustedConnection = true,
+		// 	Encrypt = false,
+		// 	CommandTimeout = "60"
+		// };
 
-		ConnectionManager.Instance.AddConnection (mssqlBag);
+		// ConnectionManager.Instance.AddConnection (mssqlBag);
 
 		// int recordCount = new Connect ("MarketingSupport").Query ("select count(*) as cnt from dbo.MarketingBrand;").Go<int> ((cmd) => {
 		// 	using (IDataReader dr = cmd.ExecuteReader ()) {
@@ -69,17 +71,16 @@ class Program
 		// 	}
 		// });
 
-		var countryCode = new Connect ("MarketingSupport")
-			.Function ("prefs.GetEmailAddressCountryCode")
-			.Append ("@emailaddress", "jedrdelyi@costar.com", 100)
-			.Return ("@countrycode", SqlDbType.VarChar, 3)
-			.Go<string?> ((cmd) => {
-				cmd.ExecuteScalar ();
-				string? countrycode = (string)cmd.BaseCommand.Parameters["@countrycode"].Value!;
+		// var countryCode = new Connect ("MarketingSupport")
+		// 	.Function ("prefs.GetEmailAddressCountryCode")
+		// 	.Append ("@emailaddress", "jedrdelyi@costar.com", 100)
+		// 	.Return ("@countrycode", SqlDbType.VarChar, 3)
+		// 	.Go<string?> ((cmd) => {
+		// 		cmd.ExecuteScalar ();
+		// 		string? countrycode = (string)cmd.BaseCommand.Parameters["@countrycode"].Value!;
 
-				return countrycode;
-			});
-
+		// 		return countrycode;
+		// 	});
 
 		// // 2023-11-20. kill me. time to get back into MSSQL!
 		// ConnectionPropertyBag mssqlConnection = new ConnectionPropertyBag () {
@@ -113,6 +114,64 @@ class Program
 
 		Console.WriteLine ();
 
+		var devConnection = new ConnectionPropertyBag () {
+			DatabaseType = DatabaseType.Postgresql,
+			Name = "dev",
+			Server = "localhost",
+			Database = "nestiny",
+			Username = "nestinyadmin",
+			Password = "ancient-snails-1337",
+			Port = "54320"
+		};
+
+		// if the podman containers are running, this will be available
+		var podConnection = new ConnectionPropertyBag () {
+			DatabaseType = DatabaseType.Postgresql,
+			Name = "pgpod",
+			Server = "localhost",
+			Database = "testdb",
+			Username = "testuser",
+			Password = "testpassword123",
+			Port = "54321"
+		};
+
+		ConnectionManager.Instance.AddConnection (devConnection);
+		ConnectionManager.Instance.AddConnection (podConnection);
+
+		// int recordCount = new Connect ("dev").Query ("select count(*) as cnt from agent;").Go<int> ((cmd) => {
+
+		// 	using (var dr = cmd.ExecuteReader ()) {
+		// 		ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+		// 		if (dr.Read ()) {
+		// 			return cmd.DRH.GetInt ("cnt");
+		// 		}
+
+		// 		return 0;
+		// 	}
+		// });
+
+		var nowval = new Connect ("pgpod").Query ("select now();").Go<DateTimeOffset> ();
+		Console.WriteLine (nowval.ToLocalTime ().ToString ("yyyy-MM-dd hh:mm:ss tt zzz"));
+
+		// let's try a new version where we're looking to detect
+		// var recordCount = new Connect ("dev").Query ("select count(*) as cnt from agent;").Go<int> ();
+		// Console.WriteLine (recordCount);
+		// let's try a nullable primitive
+		// var name = new Connect ("dev").Query ("select first_name from person where infokey = 'fooooo';").Go<string?> ();
+		// Console.WriteLine (name);
+		// name = new Connect ("dev").Query ("select first_name from person where infokey = 'janos@nestiny.com';").Go<string?> ();
+		// Console.WriteLine (name);
+		// var boolval = new Connect ("dev").Query ("select active from person where infokey = 'janos@nestiny.com';").Go<bool> ();
+		// Console.WriteLine (boolval);
+		// var nullboolval = new Connect ("dev").Query ("select active from person where infokey = 'fooooo';").Go<bool?> ();
+		// Console.WriteLine (nullboolval);
+		var datetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'janos@nestiny.com';").Go<DateTimeOffset> ();
+		Console.WriteLine (datetimeoffsetval);
+		var nulldatetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'fooooo';").Go<DateTimeOffset?> ();
+		Console.WriteLine (nulldatetimeoffsetval);
+
+		Console.WriteLine ();
 		/*
 		ConnectionPropertyBag devConnection = new ConnectionPropertyBag () {
 			DatabaseType = DatabaseType.Postgresql,
@@ -276,15 +335,20 @@ values (:a_string, :a_nullable_int, :an_int, :a_nullable_jsonb, :an_inet);";
 
 	}
 
-	private static System.Collections.Generic.IList<string> getStrings (
-		com.janoserdelyi.DataSource.Command cmd
-	) {
-		using (IDataReader dr = cmd.ExecuteReader ()) {
-			System.Collections.Generic.IList<string> rets = new System.Collections.Generic.List<string> ();
-			while (dr.Read ()) {
-				rets.Add (cmd.DRH.GetString ("a_string"));
-			}
-			return rets;
-		}
-	}
+	// private static System.Collections.Generic.IList<string> getStrings (
+	// 	com.janoserdelyi.DataSource.Command cmd
+	// ) {
+	// 	using (IDataReader dr = cmd.ExecuteReader ()) {
+	// 		if (cmd.DRH == null) {
+	// 			throw new NullReferenceException ("no DataReaderHelper found");
+	// 		}
+
+	// 		System.Collections.Generic.IList<string> rets = [];
+	// 		while (dr.Read ()) {
+	// 			rets.Add (cmd.DRH.GetString ("a_string"));
+	// 		}
+
+	// 		return rets;
+	// 	}
+	// }
 }

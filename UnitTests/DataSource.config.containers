@@ -6,7 +6,7 @@
 			<name>TestPostgresql</name>
 			<dbtype>postgresql</dbtype>
 			<server>localhost</server>
-			<port>5432</port>
+			<port>54321</port>
 			<database>testdb</database>
 			<username>testuser</username>
 			<password>testpassword123</password>
@@ -17,7 +17,7 @@
 			<name>TestMssql</name>
 			<dbtype>mssql</dbtype>
 			<server>localhost</server>
-			<port>1433</port>
+			<port>14331</port>
 			<database>testdb</database>
 			<username>testuser</username>
 			<password>TestPassword123!</password>
@@ -30,7 +30,7 @@
 			<name>TestMariadb</name>
 			<dbtype>mysql</dbtype>
 			<server>localhost</server>
-			<port>3306</port>
+			<port>33061</port>
 			<database>testdb</database>
 			<username>testuser</username>
 			<password>testpassword123</password>
