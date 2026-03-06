@@ -92,22 +92,22 @@ public class Connect
 		var isString = underlyingType == typeof (string);
 		var isBool = underlyingType == typeof (bool);
 		var isDate = underlyingType == typeof (DateTime) || underlyingType == typeof (DateTimeOffset);
+		var isArray = underlyingType.IsArray;
+		// var isEnumerable = typeof (IEnumerable<>).IsAssignableFrom (underlyingType) && underlyingType != typeof (string); // string is ienumerable<char>
+		var isGenericEnumerable = underlyingType.GetInterfaces ().Any (i => i.IsGenericType && i.GetGenericTypeDefinition () == typeof (IEnumerable<>));
 
 		var isSingularPrimitive = isPrimitive || isString || isBool || isDate;
 
-		if (isSingularPrimitive) {
-			using (connection) {
-				using (command) {
-					using (var dr = command.ExecuteReader ()) {
+		using (connection) {
+			using (command) {
+				using (var dr = command.ExecuteReader ()) {
+
+					if (isSingularPrimitive) {
 						// for primitives, the ordinal will always be the first item
 						if (dr.Read ()) {
 							var val = dr.GetValue (0);
-							if (isDate && ttype == typeof (DateTimeOffset)) {
-								// val will convert to a DateTime but not a DatetimeOffset
-								return (T)(object)new DateTimeOffset ((DateTime)val);
-							}
 
-							return (T)Convert.ChangeType (val, typeof (T));
+							return returnConvertedType<T> (underlyingType, val, isDate);
 						}
 
 						// string is always nullable at runtime
@@ -115,23 +115,48 @@ public class Connect
 							return default!;
 						}
 
-						throw new Exception ("DataReader did not read");
+						return default!;
 					}
+
+					if (isArray) {
+
+						var elementType = underlyingType.GetElementType ();
+
+						if (elementType == null) {
+							throw new Exception ("error getting element type of array. null returned on inspection");
+						}
+
+						var listType = typeof (List<>).MakeGenericType (elementType);
+						var list = (List<object>)Activator.CreateInstance (listType)!;
+
+						while (dr.Read ()) {
+							var val = dr.GetValue (0);
+							list.Add (Convert.ChangeType (val, elementType));
+						}
+
+						// Convert list to array
+						var array = Array.CreateInstance (elementType, list.Count);
+						// list.CopyTo (array, 0);
+						return (T)(object)array;
+					}
+
+					throw new Exception ("DataReader did not read");
 				}
 			}
 		}
+	}
 
-		// var result = connection.BaseConnection.Query<T> (
-		// 	command.CommandText
-		// );
+	private static T returnConvertedType<T> (
+		Type underlyingType,
+		object val,
+		bool isDate
+	) {
+		if (isDate && underlyingType == typeof (DateTimeOffset)) {
+			// val will convert to a DateTime but not a DatetimeOffset
+			return (T)(object)new DateTimeOffset ((DateTime)val);
+		}
 
-		// using (connection) {
-		// 	using (command) {
-		// 		command.BaseCommand.
-		// 	}
-		// }
-
-		return default!;
+		return (T)Convert.ChangeType (val, typeof (T));
 	}
 
 	public T Go<T> (
