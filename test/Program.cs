@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 // using System.Data;
 using com.janoserdelyi.DataSource;
 
@@ -151,8 +153,8 @@ public class Program
 		// 	}
 		// });
 
-		var nowval = new Connect ("pgpod").Query ("select now();").Go<DateTimeOffset> ();
-		Console.WriteLine (nowval.ToLocalTime ().ToString ("yyyy-MM-dd hh:mm:ss tt zzz"));
+		// var nowval = new Connect ("pgpod").Query ("select now();").Go<DateTimeOffset> ();
+		// Console.WriteLine (nowval.ToLocalTime ().ToString ("yyyy-MM-dd hh:mm:ss tt zzz"));
 
 		// let's try a new version where we're looking to detect
 		// var recordCount = new Connect ("dev").Query ("select count(*) as cnt from agent;").Go<int> ();
@@ -166,10 +168,12 @@ public class Program
 		// Console.WriteLine (boolval);
 		// var nullboolval = new Connect ("dev").Query ("select active from person where infokey = 'fooooo';").Go<bool?> ();
 		// Console.WriteLine (nullboolval);
-		var datetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'janos@nestiny.com';").Go<DateTimeOffset> ();
-		Console.WriteLine (datetimeoffsetval);
-		var nulldatetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'fooooo';").Go<DateTimeOffset?> ();
-		Console.WriteLine (nulldatetimeoffsetval);
+		// var datetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'janos@nestiny.com';").Go<DateTimeOffset> ();
+		// Console.WriteLine (datetimeoffsetval);
+		// var nulldatetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'fooooo';").Go<DateTimeOffset?> ();
+		// Console.WriteLine (nulldatetimeoffsetval);
+		var arrayval = new Connect ("dev").Query ("select count(*) from brokerage where active = true;").Go<string[]> ();
+		var collectionval = new Connect ("dev").Query ("select count(*) from brokerage where active = true;").Go<List<string>> ();
 
 		Console.WriteLine ();
 		/*

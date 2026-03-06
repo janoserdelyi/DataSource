@@ -13,4 +13,5 @@ changelog*.txt
 *.config
 *.sh
 *.user
+CLAUDE.md
 
