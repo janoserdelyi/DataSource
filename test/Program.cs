@@ -172,8 +172,9 @@ public class Program
 		// Console.WriteLine (datetimeoffsetval);
 		// var nulldatetimeoffsetval = new Connect ("dev").Query ("select create_dt from person where infokey = 'fooooo';").Go<DateTimeOffset?> ();
 		// Console.WriteLine (nulldatetimeoffsetval);
-		var arrayval = new Connect ("dev").Query ("select count(*) from brokerage where active = true;").Go<string[]> ();
-		var collectionval = new Connect ("dev").Query ("select count(*) from brokerage where active = true;").Go<List<string>> ();
+		var singleval = new Connect ("dev").Query ("select name from brokerage where active = :active order by create_dt desc limit 1;").Append ("active", true).Go<string> ();
+		var arrayval = new Connect ("dev").Query ("select name from brokerage where active = true order by create_dt desc limit 10;").Go<string[]> ();
+		var collectionval = new Connect ("dev").Query ("select name from brokerage where active = true order by create_dt desc limit 10;").Go<List<string>> ();
 
 		Console.WriteLine ();
 		/*

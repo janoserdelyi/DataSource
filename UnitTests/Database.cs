@@ -11,6 +11,9 @@ public class DatabaseFixture : IDisposable
 	public DatabaseFixture () {
 		ConnectionManager = ConnectionManager.Instance;
 
+		// enable snake_case -> PascalCase mapping for Dapper DTO tests
+		Dapper.DefaultTypeMap.MatchNamesWithUnderscores = true;
+
 		// PostgreSQL
 		// establish a table to test against
 		_ = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("drop table if exists public.test;").Go ();
@@ -796,6 +799,148 @@ public class Database : IClassFixture<DatabaseFixture>
 					.Go<DateTimeOffset?> ();
 
 				Assert.Null<DateTimeOffset> (record);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoListOfInt_WithData_ExpectList () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from (values (1::int), (2::int), (3::int)) as t(n);")
+					.Go<List<int>> ();
+
+				Assert.NotNull (result);
+				Assert.Equal (3, result.Count);
+				Assert.Equal (new List<int> { 1, 2, 3 }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoIntArray_WithData_ExpectArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from (values (1::int), (2::int), (3::int)) as t(n);")
+					.Go<int[]> ();
+
+				Assert.NotNull (result);
+				Assert.Equal (3, result.Length);
+				Assert.Equal (new int[] { 1, 2, 3 }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoIEnumerableOfInt_WithData_ExpectResults () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from (values (1::int), (2::int), (3::int)) as t(n);")
+					.Go<IEnumerable<int>> ();
+
+				Assert.NotNull (result);
+				Assert.Equal (3, result.Count ());
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoListOfString_WithData_ExpectList () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select name from public.test;")
+					.Go<List<string>> ();
+
+				Assert.NotNull (result);
+				Assert.NotEmpty (result);
+				Assert.Contains ("foo", result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoStringArray_WithData_ExpectArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select name from public.test;")
+					.Go<string[]> ();
+
+				Assert.NotNull (result);
+				Assert.NotEmpty (result);
+				Assert.Contains ("foo", result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoListOfInt_EmptyResult_ExpectEmptyList () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select id from public.test where id = :id;")
+					.Append ("id", 99999)
+					.Go<List<int>> ();
+
+				Assert.NotNull (result);
+				Assert.Empty (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoIntArray_EmptyResult_ExpectEmptyArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select id from public.test where id = :id;")
+					.Append ("id", 99999)
+					.Go<int[]> ();
+
+				Assert.NotNull (result);
+				Assert.Empty (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoTestDto_ExpectDto () {
+		int id = 1;
+
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", id)
+					.Go<TestDto> ();
+
+				Assert.NotNull (result);
+				Assert.Equal (id, result.Id);
+				Assert.Equal ("foo", result.Name);
+				Assert.Equal ("foo", result.Surrogate);
+				Assert.Equal (1L, result.BigNumber);
+				Assert.Equal ((short)1, result.SmallNumber);
+				Assert.True (result.Active);
+				Assert.True (result.CreatedDt > DateTimeOffset.UnixEpoch);
+			}
+		}
+	}
+
+	[Fact]
+	public void Funcless_GoListOfTestDto_ExpectList () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test;")
+					.Go<List<TestDto>> ();
+
+				Assert.NotNull (result);
+				Assert.NotEmpty (result);
+				Assert.All (result, dto => Assert.NotNull (dto.Name));
 			}
 		}
 	}

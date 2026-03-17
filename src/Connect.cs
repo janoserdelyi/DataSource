@@ -69,95 +69,162 @@ public class Connect
 		}
 	}
 
-	// TODO: import Dapper and makes a version of Go like Go<T> ();
 	public T Go<T> () {
-
 		ArgumentNullException.ThrowIfNull (command);
 
-		// we have a few things going on here. how to detect if this is just requesting a primitive and not an object?
-		var ttype = typeof (T);
-		var underlyingType = Nullable.GetUnderlyingType (ttype);
-		var isNullable = false;
-
-		if (underlyingType != null) {
-			// T is nullable. leave it be
-			isNullable = true;
-		} else {
-			// T is not nullable
-			underlyingType = ttype;
+		if (connection.State != ConnectionState.Open) {
+			connection.Open ();
 		}
 
-		var isValueType = underlyingType.IsValueType;
-		var isPrimitive = underlyingType.IsPrimitive; // bool's ttype is primitive, but bool? was not, which is why i'm doing these off the underlying type
-		var isString = underlyingType == typeof (string);
-		var isBool = underlyingType == typeof (bool);
-		var isDate = underlyingType == typeof (DateTime) || underlyingType == typeof (DateTimeOffset);
-		var isArray = underlyingType.IsArray;
-		// var isEnumerable = typeof (IEnumerable<>).IsAssignableFrom (underlyingType) && underlyingType != typeof (string); // string is ienumerable<char>
-		var isGenericEnumerable = underlyingType.GetInterfaces ().Any (i => i.IsGenericType && i.GetGenericTypeDefinition () == typeof (IEnumerable<>));
+		var dp = new Dapper.DynamicParameters ();
+		foreach (DbParameter param in command.BaseCommand.Parameters) {
+			dp.Add (param.ParameterName, param.Value, param.DbType);
+		}
 
-		var isSingularPrimitive = isPrimitive || isString || isBool || isDate;
+		var ttype = typeof (T);
 
-		using (connection) {
-			using (command) {
-				using (var dr = command.ExecuteReader ()) {
+		// handle array types (e.g. int[], string[])
+		if (ttype.IsArray) {
+			var elementType = ttype.GetElementType ()!;
 
-					if (isSingularPrimitive) {
-						// for primitives, the ordinal will always be the first item
-						if (dr.Read ()) {
-							var val = dr.GetValue (0);
+			using (connection) {
+				var rows = connection.Query (elementType, command.CommandText, dp).ToList ();
+				var array = Array.CreateInstance (elementType, rows.Count);
+				for (int i = 0; i < rows.Count; i++) {
+					array.SetValue (rows[i], i);
+				}
 
-							return returnConvertedType<T> (underlyingType, val, isDate);
-						}
+				return (T)(object)array;
+			}
+		}
 
-						// string is always nullable at runtime
-						if (isNullable || isString) {
-							return default!;
-						}
+		// handle generic collection types (List<T>, IEnumerable<T>, ICollection<T>, IList<T>, etc.)
+		if (ttype.IsGenericType) {
+			var genericDef = ttype.GetGenericTypeDefinition ();
+			bool isCollection =
+				genericDef == typeof (List<>) ||
+				genericDef == typeof (IEnumerable<>) ||
+				genericDef == typeof (ICollection<>) ||
+				genericDef == typeof (IList<>) ||
+				genericDef == typeof (IReadOnlyList<>) ||
+				genericDef == typeof (IReadOnlyCollection<>);
 
-						return default!;
+			if (isCollection) {
+				var elementType = ttype.GetGenericArguments ()[0];
+
+				using (connection) {
+					var rows = connection.Query (elementType, command.CommandText, dp);
+					var typedList = (System.Collections.IList)Activator.CreateInstance (typeof (List<>).MakeGenericType (elementType))!;
+					foreach (var row in rows) {
+						typedList.Add (row);
 					}
 
-					if (isArray) {
-
-						var elementType = underlyingType.GetElementType ();
-
-						if (elementType == null) {
-							throw new Exception ("error getting element type of array. null returned on inspection");
-						}
-
-						var listType = typeof (List<>).MakeGenericType (elementType);
-						var list = (List<object>)Activator.CreateInstance (listType)!;
-
-						while (dr.Read ()) {
-							var val = dr.GetValue (0);
-							list.Add (Convert.ChangeType (val, elementType));
-						}
-
-						// Convert list to array
-						var array = Array.CreateInstance (elementType, list.Count);
-						// list.CopyTo (array, 0);
-						return (T)(object)array;
-					}
-
-					throw new Exception ("DataReader did not read");
+					return (T)typedList;
 				}
 			}
 		}
-	}
 
-	private static T returnConvertedType<T> (
-		Type underlyingType,
-		object val,
-		bool isDate
-	) {
-		if (isDate && underlyingType == typeof (DateTimeOffset)) {
-			// val will convert to a DateTime but not a DatetimeOffset
-			return (T)(object)new DateTimeOffset ((DateTime)val);
+		// single value — primitive, string, or complex object
+		using (connection) {
+			// DateTimeOffset seems to have issues with conversion
+			if (ttype == typeof (DateTimeOffset)) {
+				var datetime = connection.QueryFirstOrDefault<DateTime> (command.CommandText, dp)!;
+				return (T)(object)new DateTimeOffset (datetime);
+			}
+
+			var result = connection.QueryFirstOrDefault<T> (command.CommandText, dp)!;
+			return result;
 		}
-
-		return (T)Convert.ChangeType (val, typeof (T));
 	}
+
+	// public T Go<T> () {
+
+	// 	ArgumentNullException.ThrowIfNull (command);
+
+	// 	// we have a few things going on here. how to detect if this is just requesting a primitive and not an object?
+	// 	var ttype = typeof (T);
+	// 	var underlyingType = Nullable.GetUnderlyingType (ttype);
+	// 	var isNullable = false;
+
+	// 	if (underlyingType != null) {
+	// 		// T is nullable. leave it be
+	// 		isNullable = true;
+	// 	} else {
+	// 		// T is not nullable
+	// 		underlyingType = ttype;
+	// 	}
+
+	// 	var isValueType = underlyingType.IsValueType;
+	// 	var isPrimitive = underlyingType.IsPrimitive; // bool's ttype is primitive, but bool? was not, which is why i'm doing these off the underlying type
+	// 	var isString = underlyingType == typeof (string);
+	// 	var isBool = underlyingType == typeof (bool);
+	// 	var isDate = underlyingType == typeof (DateTime) || underlyingType == typeof (DateTimeOffset);
+	// 	var isArray = underlyingType.IsArray;
+	// 	// var isEnumerable = typeof (IEnumerable<>).IsAssignableFrom (underlyingType) && underlyingType != typeof (string); // string is ienumerable<char>
+	// 	var isGenericEnumerable = underlyingType.GetInterfaces ().Any (i => i.IsGenericType && i.GetGenericTypeDefinition () == typeof (IEnumerable<>));
+
+	// 	var isSingularPrimitive = isPrimitive || isString || isBool || isDate;
+
+	// 	using (connection) {
+	// 		using (command) {
+	// 			using (var dr = command.ExecuteReader ()) {
+
+	// 				if (isSingularPrimitive) {
+	// 					// for primitives, the ordinal will always be the first item
+	// 					if (dr.Read ()) {
+	// 						var val = dr.GetValue (0);
+
+	// 						return returnConvertedType<T> (underlyingType, val, isDate);
+	// 					}
+
+	// 					// string is always nullable at runtime
+	// 					if (isNullable || isString) {
+	// 						return default!;
+	// 					}
+
+	// 					return default!;
+	// 				}
+
+	// 				if (isArray) {
+
+	// 					var elementType = underlyingType.GetElementType ();
+
+	// 					if (elementType == null) {
+	// 						throw new Exception ("error getting element type of array. null returned on inspection");
+	// 					}
+
+	// 					var listType = typeof (List<>).MakeGenericType (elementType);
+	// 					var list = (List<object>)Activator.CreateInstance (listType)!;
+
+	// 					while (dr.Read ()) {
+	// 						var val = dr.GetValue (0);
+	// 						list.Add (Convert.ChangeType (val, elementType));
+	// 					}
+
+	// 					// Convert list to array
+	// 					var array = Array.CreateInstance (elementType, list.Count);
+	// 					// list.CopyTo (array, 0);
+	// 					return (T)(object)array;
+	// 				}
+
+	// 				throw new Exception ("DataReader did not read");
+	// 			}
+	// 		}
+	// 	}
+	// }
+
+	// private static T returnConvertedType<T> (
+	// 	Type underlyingType,
+	// 	object val,
+	// 	bool isDate
+	// ) {
+	// 	if (isDate && underlyingType == typeof (DateTimeOffset)) {
+	// 		// val will convert to a DateTime but not a DatetimeOffset
+	// 		return (T)(object)new DateTimeOffset ((DateTime)val);
+	// 	}
+
+	// 	return (T)Convert.ChangeType (val, typeof (T));
+	// }
 
 	public T Go<T> (
 		Func<com.janoserdelyi.DataSource.Command, T> loadObj
