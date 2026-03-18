@@ -1,5 +1,6 @@
 using System.Data;
 // using System.Data.Common;
+using System.Reflection;
 using System.Text;
 using com.janoserdelyi.DataSource;
 
@@ -941,6 +942,55 @@ public class Database : IClassFixture<DatabaseFixture>
 				Assert.NotNull (result);
 				Assert.NotEmpty (result);
 				Assert.All (result, dto => Assert.NotNull (dto.Name));
+			}
+		}
+	}
+
+	[Fact]
+	public void DataReaderHelperPostgresql_OrdinalCaching_CachesOnFirstAccess () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<bool> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+
+						Assert.True (dr.Read (), "Expected at least one row in public.test");
+
+						var drh = (DataReaderHelperPostgresql)cmd.DRH!;
+
+						var cacheField = typeof (DataReaderHelperPostgresql).GetField (
+							"_ordinalCache",
+							BindingFlags.NonPublic | BindingFlags.Instance
+						);
+						var cache = (Dictionary<string, int>)cacheField!.GetValue (drh)!;
+
+						// cache is empty before any column access
+						Assert.Empty (cache);
+
+						// first access populates the cache
+						_ = drh.GetInt ("id");
+						Assert.Single (cache);
+						Assert.True (cache.ContainsKey ("id"));
+						int cachedOrdinal = cache["id"];
+
+						// repeated access to the same column does not grow the cache
+						_ = drh.GetInt ("id");
+						Assert.Single (cache);
+						Assert.Equal (cachedOrdinal, cache["id"]);
+
+						// accessing a new column grows the cache by exactly one
+						_ = drh.GetString ("name");
+						Assert.Equal (2, cache.Count);
+						Assert.True (cache.ContainsKey ("name"));
+
+						// repeated access to the second column does not grow the cache further
+						_ = drh.GetString ("name");
+						Assert.Equal (2, cache.Count);
+
+						return true;
+					});
 			}
 		}
 	}
