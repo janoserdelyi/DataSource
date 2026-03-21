@@ -78,7 +78,12 @@ public class Connect
 
 		var dp = new Dapper.DynamicParameters ();
 		foreach (DbParameter param in command.BaseCommand.Parameters) {
-			dp.Add (param.ParameterName, param.Value, param.DbType);
+			if (param is Microsoft.Data.SqlClient.SqlParameter sqlParam && sqlParam.SqlDbType == SqlDbType.Structured) {
+				// table-valued parameters need the TypeName preserved; plain dp.Add loses it
+				dp.Add (param.ParameterName, ((DataTable)param.Value!).AsTableValuedParameter (sqlParam.TypeName));
+			} else {
+				dp.Add (param.ParameterName, param.Value, param.DbType);
+			}
 		}
 
 		var ttype = typeof (T);
@@ -127,7 +132,7 @@ public class Connect
 		// single value — primitive, string, or complex object
 		using (connection) {
 			// DateTimeOffset seems to have issues with conversion
-			if (ttype == typeof (DateTimeOffset)) {
+			if (ttype == typeof (DateTimeOffset) && connection.PropertyBag?.DatabaseType == DatabaseType.Postgresql) {
 				var datetime = connection.QueryFirstOrDefault<DateTime> (command.CommandText, dp)!;
 				return (T)(object)new DateTimeOffset (datetime);
 			}

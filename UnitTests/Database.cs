@@ -35,25 +35,35 @@ public class DatabaseFixture : IDisposable
 
 		_ = insertTestRecord (DatabaseType.Postgresql);
 
+		// create a simple scalar function for testing
+		_ = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("create or replace function public.is_positive(n int) returns boolean language sql as $$ select n > 0 $$;").Go ();
+
 		// MSSQL
 		// establish a table to test against
-		// 		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop table if exists dbo.test;").Go ();
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop table if exists dbo.test;").Go ();
 
-		// 		// create the table with all sorts of data types
-		// 		_ = new Connect (MSSQL_CONNECTION_NAME).Query (@"create table dbo.test (
-		// 	id int primary key identity,
-		// 	surrogate varchar(20) not null unique,
-		// 	name nvarchar(100) not null,
-		// 	big_number bigint not null,
-		// 	small_number smallint not null,
-		// 	bytes varbinary(1024) not null,
-		// 	charv varchar(25) not null,
-		// 	charnv nvarchar(25) not null,
-		// 	active bit not null default 1,
-		// 	created_dt datetimeoffset not null default sysdatetimeoffset()
-		// );").Go ();
+		// create the table with all sorts of data types
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query (@"create table dbo.test (
+	id int primary key identity,
+	surrogate varchar(20) not null unique,
+	name nvarchar(100) not null,
+	big_number bigint not null,
+	small_number smallint not null,
+	bytes varbinary(1024) not null,
+	charv varchar(25) not null,
+	charnv nvarchar(25) not null,
+	active bit not null default 1,
+	created_dt datetimeoffset not null default sysdatetimeoffset()
+);").Go ();
 
-		// 		_ = insertTestRecord (DatabaseType.MSSQL);
+		_ = insertTestRecord (DatabaseType.MSSQL);
+
+		// create a simple scalar function for testing
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop function if exists dbo.IsPositive;").Go ();
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("create function dbo.IsPositive(@n int) returns bit as begin return case when @n > 0 then 1 else 0 end end;").Go ();
+		// create a user defined type for testing
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop type dbo.IdArrayType;").Go ();
+		_ = new Connect (MSSQL_CONNECTION_NAME).Query ("create type dbo.IdArrayType as table (id int);").Go ();
 
 		// MariaDB
 		// establish a table to test against
@@ -81,11 +91,13 @@ public class DatabaseFixture : IDisposable
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
 				// establish a table to test against
 				_ = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("drop table if exists public.test;").Go ();
+				_ = new Connect (POSTGRESQL_CONNECTION_NAME).Query ("drop function if exists public.is_positive(int);").Go ();
 			}
 
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				// establish a table to test against
 				_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop table if exists dbo.test;").Go ();
+				_ = new Connect (MSSQL_CONNECTION_NAME).Query ("drop function if exists dbo.IsPositive;").Go ();
 			}
 
 			if (connection.Value.DatabaseType == DatabaseType.MySql) {
@@ -463,24 +475,43 @@ public class Database : IClassFixture<DatabaseFixture>
 	[Fact]
 	public void Call_ScalarFunction_ExpectTrue () {
 		foreach (var connection in _cm.Connections) {
-			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
-				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
-					.Query ("select prefs.IsSendableStatus(@EmailAddress) as foo;")
-					.AppendNvarchar ("EmailAddress", "jerdelyi@costar.com")
-					.Go<bool> ((cmd) => {
-						using (var dr = cmd.ExecuteReader ()) {
-							ArgumentNullException.ThrowIfNull (cmd.DRH);
 
-							if (dr.Read ()) {
-								return cmd.DRH.GetBool ("foo");
-							}
-
-							throw new NullReferenceException ("error calling prefs.IsSendableStatus with value jerdelyi@costar.com");
-						}
-					});
-
-				Assert.True (result);
+			string? query = null;
+			string? schemafunc = null;
+			string? conname = null;
+			switch (connection.Value.DatabaseType) {
+				case DatabaseType.Postgresql:
+					conname = DatabaseFixture.POSTGRESQL_CONNECTION_NAME;
+					schemafunc = "public.is_positive";
+					query = $"select {schemafunc}(:n) as result;";
+					break;
+				case DatabaseType.MSSQL:
+					conname = DatabaseFixture.MSSQL_CONNECTION_NAME;
+					schemafunc = "dbo.IsPositive";
+					query = $"select {schemafunc}(@n) as result;";
+					break;
+				case DatabaseType.MySql:
+				case DatabaseType.Sqlite:
+				default:
+					continue;
 			}
+
+			var result = new Connect (conname)
+				.Query (query)
+				.Append ("n", 1)
+				.Go<bool> ((cmd) => {
+					using (var dr = cmd.ExecuteReader ()) {
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+						if (dr.Read ()) {
+							return cmd.DRH.GetBool ("result");
+						}
+
+						throw new NullReferenceException ($"error calling {schemafunc}");
+					}
+				});
+
+			Assert.True (result);
 		}
 	}
 
@@ -496,22 +527,29 @@ public class Database : IClassFixture<DatabaseFixture>
 				dt.Rows.Add (2);
 				dt.Rows.Add (3);
 
+				// var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+				// 	.Query ("select id from @ids;")
+				// 	.Append ("ids", dt, "dbo.IdArrayType")
+				// 	.Go<List<int>> ((cmd) => {
+				// 		using (var dr = cmd.ExecuteReader ()) {
+				// 			ArgumentNullException.ThrowIfNull (cmd.DRH);
+
+				// 			var rets = new List<int> ();
+				// 			while (dr.Read ()) {
+				// 				rets.Add (cmd.DRH.GetInt ("id"));
+				// 			}
+
+				// 			return rets;
+				// 		}
+				// 	});
+
 				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
 					.Query ("select id from @ids;")
 					.Append ("ids", dt, "dbo.IdArrayType")
-					.Go<List<int>> ((cmd) => {
-						using (var dr = cmd.ExecuteReader ()) {
-							ArgumentNullException.ThrowIfNull (cmd.DRH);
+					.Go<List<int>> ();
 
-							var rets = new List<int> ();
-							while (dr.Read ()) {
-								rets.Add (cmd.DRH.GetInt ("id"));
-							}
-
-							return rets;
-						}
-					});
-
+				Assert.NotNull (result);
+				Assert.NotEmpty (result);
 			}
 		}
 	}
@@ -735,14 +773,12 @@ public class Database : IClassFixture<DatabaseFixture>
 	[Fact]
 	public void Funcless_DateTimeOffsetSelect_ExpectDateTimeOffset () {
 
-		int id = 1;
 		var result = new DateTimeOffset (2000, 1, 1, 0, 0, 0, new TimeSpan (-5, 0, 0));
 
 		foreach (var connection in _cm.Connections) {
 			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
 				var record = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
-					.Query ("select created_dt from public.test where id = :id;")
-					.Append ("id", id)
+					.Query ("select now() as now;")
 					.Go<DateTimeOffset> ();
 
 				Assert.True (record > result);
@@ -750,21 +786,20 @@ public class Database : IClassFixture<DatabaseFixture>
 
 			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
 				var record = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
-					.Query ("select created_dt from dbo.test where id = @id;")
-					.Append ("id", id)
+					.Query ("select sysdatetimeoffset() as now;")
 					.Go<DateTimeOffset> ();
 
 				Assert.True (record > result);
 			}
 
-			if (connection.Value.DatabaseType == DatabaseType.MySql) {
-				var record = new Connect (DatabaseFixture.MYSQL_CONNECTION_NAME)
-					.Query ("select created_dt from test where id = ?id;")
-					.Append ("id", id)
-					.Go<DateTimeOffset> ();
+			// 2026-03-20 mariadb is still trash. from what i can tell there is no date time with timezone
+			// if (connection.Value.DatabaseType == DatabaseType.MySql) {
+			// 	var record = new Connect (DatabaseFixture.MYSQL_CONNECTION_NAME)
+			// 		.Query ("select created_dt from test where id = ?id;")
+			// 		.Go<DateTimeOffset> ();
 
-				Assert.True (record > result);
-			}
+			// 	Assert.True (record > result);
+			// }
 		}
 	}
 
