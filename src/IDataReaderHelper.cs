@@ -63,7 +63,6 @@ public interface IDataReaderHelper : IDisposable
 
 	long[]? GetLongArray (string column);
 	double[]? GetDoubleArray (string column);
-	DateTime[]? GetDateTimeArray (string column);
 	string[]? GetStringArray (string column);
 
 	string GetInet (string column);

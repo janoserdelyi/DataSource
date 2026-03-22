@@ -995,7 +995,7 @@ public class Database : IClassFixture<DatabaseFixture>
 
 						var drh = (DataReaderHelperPostgresql)cmd.DRH!;
 
-						var cacheField = typeof (DataReaderHelperPostgresql).GetField (
+						var cacheField = typeof (DataReaderHelperBase).GetField (
 							"_ordinalCache",
 							BindingFlags.NonPublic | BindingFlags.Instance
 						);
@@ -1026,6 +1026,786 @@ public class Database : IClassFixture<DatabaseFixture>
 
 						return true;
 					});
+			}
+		}
+	}
+
+	[Fact]
+	public void GetLong_ExpectLong () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select big_number from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<long> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetLong ("big_number");
+					});
+				Assert.Equal (1L, result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select big_number from dbo.test where id = @id;")
+					.Append ("id", 1)
+					.Go<long> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetLong ("big_number");
+					});
+				Assert.Equal (1L, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetLong_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::bigint as big_number;")
+					.Go<long?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetLong ("big_number", true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS bigint) as big_number;")
+					.Go<long?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetLong ("big_number", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetShort_ExpectShort () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select small_number from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<short> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetShort ("small_number");
+					});
+				Assert.Equal ((short)1, result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select small_number from dbo.test where id = @id;")
+					.Append ("id", 1)
+					.Go<short> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetShort ("small_number");
+					});
+				Assert.Equal ((short)1, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetShort_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::smallint as small_number;")
+					.Go<short?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetShort ("small_number", true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS smallint) as small_number;")
+					.Go<short?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetShort ("small_number", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetByteArray_ExpectByteArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select bytes from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<byte[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetByteArray ("bytes", 1024);
+					});
+				Assert.NotNull (result);
+				Assert.Equal (1024, result.Length);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select bytes from dbo.test where id = @id;")
+					.Append ("id", 1)
+					.Go<byte[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetByteArray ("bytes", 1024);
+					});
+				Assert.NotNull (result);
+				Assert.Equal (1024, result.Length);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetByteArray_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::bytea as bytes;")
+					.Go<byte[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetByteArray ("bytes", 0, true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS varbinary(1)) as bytes;")
+					.Go<byte[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetByteArray ("bytes", 0, true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDateTime_ExpectDateTime () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select now()::timestamp as dt;")
+					.Go<DateTime> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDateTime ("dt");
+					});
+				Assert.True (result > new DateTime (2000, 1, 1));
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select GETDATE() as dt;")
+					.Go<DateTime> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDateTime ("dt");
+					});
+				Assert.True (result > new DateTime (2000, 1, 1));
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDateTime_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::timestamp as dt;")
+					.Go<DateTime?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDateTime ("dt", true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS datetime) as dt;")
+					.Go<DateTime?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDateTime ("dt", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void HasField_ExistingColumn_ExpectTrue () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<bool> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.HasField ("id");
+					});
+				Assert.True (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void HasField_MissingColumn_ExpectFalse () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select * from public.test where id = :id;")
+					.Append ("id", 1)
+					.Go<bool> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.HasField ("nonexistent_column");
+					});
+				Assert.False (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDecimal_ExpectDecimal () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select 1.5::numeric as n;")
+					.Go<decimal> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDecimal ("n");
+					});
+				Assert.Equal (1.5m, result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(1.5 AS DECIMAL(10,2)) AS n;")
+					.Go<decimal> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDecimal ("n");
+					});
+				Assert.Equal (1.5m, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDecimal_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::numeric as n;")
+					.Go<decimal?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDecimal ("n", true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS decimal(10,2)) as n;")
+					.Go<decimal?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDecimal ("n", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDouble_ExpectDouble () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select 1.5::float8 as n;")
+					.Go<double> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDouble ("n");
+					});
+				Assert.Equal (1.5, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDouble_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::float8 as n;")
+					.Go<double?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDouble ("n", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetGuid_ExpectGuid () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select gen_random_uuid() as id;")
+					.Go<Guid> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetGuid ("id");
+					});
+				Assert.NotEqual (Guid.Empty, result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select NEWID() as id;")
+					.Go<Guid> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetGuid ("id");
+					});
+				Assert.NotEqual (Guid.Empty, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetGuid_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::uuid as id;")
+					.Go<Guid?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetGuid ("id", true);
+					});
+				Assert.Null (result);
+			}
+
+			if (connection.Value.DatabaseType == DatabaseType.MSSQL) {
+				var result = new Connect (DatabaseFixture.MSSQL_CONNECTION_NAME)
+					.Query ("select CAST(NULL AS uniqueidentifier) as id;")
+					.Go<Guid?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetGuid ("id", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetTimeSpan_ExpectTimeSpan () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select '09:00:00'::time as t;")
+					.Go<TimeSpan> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetTimeSpan ("t");
+					});
+				Assert.Equal (new TimeSpan (9, 0, 0), result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetTimeSpan_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::time as t;")
+					.Go<TimeSpan?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetTimeSpan ("t", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetIntArray_ExpectIntArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select ARRAY[1,2,3]::int[] as arr;")
+					.Go<int[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetIntArray ("arr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (new int[] { 1, 2, 3 }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetIntArray2D_ExpectIntArray2D () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select ARRAY[[1,2],[3,4]] as arr;")
+					.Go<int[,]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetIntArray2D ("arr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (2, result.GetLength (0));
+				Assert.Equal (2, result.GetLength (1));
+				Assert.Equal (1, result[0, 0]);
+				Assert.Equal (4, result[1, 1]);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetLongArray_ExpectLongArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select ARRAY[1,2,3]::bigint[] as arr;")
+					.Go<long[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetLongArray ("arr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (new long[] { 1L, 2L, 3L }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetDoubleArray_ExpectDoubleArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select ARRAY[1.5,2.5]::float8[] as arr;")
+					.Go<double[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetDoubleArray ("arr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (new double[] { 1.5, 2.5 }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetStringArray_ExpectStringArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select ARRAY['a','b','c']::text[] as arr;")
+					.Go<string[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetStringArray ("arr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (new string[] { "a", "b", "c" }, result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetStringArray_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::text[] as arr;")
+					.Go<string[]?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetStringArray ("arr");
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetJson_ExpectJson () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select '{\"key\":\"value\"}'::json as j;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetJson ("j");
+					});
+				Assert.NotNull (result);
+				Assert.Contains ("key", result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetJson_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::json as j;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetJson ("j", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetJsonb_ExpectJsonb () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select '{\"key\":\"value\"}'::jsonb as j;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetJsonb ("j");
+					});
+				Assert.NotNull (result);
+				Assert.Contains ("key", result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetJsonb_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::jsonb as j;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetJsonb ("j", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetInet_ExpectString () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select '192.168.1.1'::inet as addr;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetInet ("addr");
+					});
+				Assert.NotNull (result);
+				Assert.Contains ("192.168.1.1", result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetInet_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::inet as addr;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetInet ("addr", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetIpAddress_ExpectIpAddress () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select '10.0.0.1'::inet as addr;")
+					.Go<System.Net.IPAddress?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetIpAddress ("addr");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (System.Net.IPAddress.Parse ("10.0.0.1"), result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetIpAddress_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::inet as addr;")
+					.Go<System.Net.IPAddress?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetIpAddress ("addr", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetBit_ExpectBitArray () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select B'101'::varbit as b;")
+					.Go<System.Collections.BitArray?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetBit ("b");
+					});
+				Assert.NotNull (result);
+				Assert.Equal (3, result.Length);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetBit_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::varbit as b;")
+					.Go<System.Collections.BitArray?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetBit ("b", true);
+					});
+				Assert.Null (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetRegconfig_ExpectString () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select 'english'::regconfig as cfg;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetRegconfig ("cfg");
+					});
+				Assert.NotNull (result);
+				Assert.NotEmpty (result);
+			}
+		}
+	}
+
+	[Fact]
+	public void GetRegconfig_Nullable_ExpectNull () {
+		foreach (var connection in _cm.Connections) {
+			if (connection.Value.DatabaseType == DatabaseType.Postgresql) {
+				var result = new Connect (DatabaseFixture.POSTGRESQL_CONNECTION_NAME)
+					.Query ("select NULL::regconfig as cfg;")
+					.Go<string?> ((cmd) => {
+						using var dr = cmd.ExecuteReader ();
+						ArgumentNullException.ThrowIfNull (cmd.DRH);
+						dr.Read ();
+						return cmd.DRH.GetRegconfig ("cfg");
+					});
+				Assert.Null (result);
 			}
 		}
 	}
